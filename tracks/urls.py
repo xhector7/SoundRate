@@ -1,6 +1,8 @@
 from django.urls import path, include
 from rest_framework import routers
 from . import views
+from .views import register
+
 
 router = routers.DefaultRouter()
 
@@ -10,5 +12,6 @@ router.register(r'playlists', views.PlaylistViewSet, basename='playlists')
 router.register(r'follows', views.FollowViewSet, basename='follows')
 
 urlpatterns = [
-    path("", include(router.urls)),  
+    path("", include(router.urls)), 
+    path("register/", register), 
 ]
