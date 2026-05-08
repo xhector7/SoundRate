@@ -1,14 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import TracksPage from "./pages/TracksPage";
-import UploadTrackPage from "./pages/UploadTrackPage";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router/AppRouter";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<TracksPage />} />
-        <Route path="/upload" element={<UploadTrackPage />} />
-      </Routes>
+      <AppRouter />
     </BrowserRouter>
   );
 }
