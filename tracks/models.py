@@ -169,6 +169,8 @@ class Rating(models.Model):
     class Meta:
         unique_together = ("user", "track")
 
+        
+
 
 # =========================
 # COMMENT

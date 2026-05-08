@@ -1,7 +1,7 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 import rest_framework.permissions as permissions
 
-#  PERMISO PERSONALIZADO: SOLO EL OWNER PUEDE EDITAR, PERO TODOS PUEDEN LEER, 
+# PERMISO PERSONALIZADO: SOLO EL OWNER PUEDE EDITAR, PERO TODOS PUEDEN LEER, 
 # despues se usara esta clase en views para poder definir la seguridad
 
 class IsOwnerOrReadOnly(BasePermission):
