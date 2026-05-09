@@ -30,3 +30,84 @@ Secondary:    #7c5cff (violeta suave opcional)
 Text main:    #ffffff
 Text muted:   #a0a0a8
 Border:       #2a2a35
+
+
+
+src/
+│
+├── assets/
+│   └── (imagenes, logos, etc.)
+│
+├── components/
+│   ├── Navbar.jsx
+│   ├── PlayerBar.jsx      👈 reproductor global fijo abajo
+│   ├── TrackCard.jsx      👈 card reutilizable
+│   └── CommentsList.jsx   👈 comentarios del track
+│
+├── pages/
+│   ├── Home.jsx           👈 landing / marketing
+│   ├── Discover.jsx       👈 feed principal (tipo SoundCloud)
+│   ├── Trending.jsx       👈 rankings por notas/género
+│   ├── Track.jsx          👈 detalle + play + rating + comments
+│   ├── Login.jsx
+│   └── Register.jsx
+│
+├── router/
+│   └── AppRouter.jsx      👈 rutas centralizadas
+│
+├── services/
+│   └── tracks.js          👈 datos hardcoded (temporal)
+│
+├── App.jsx
+└── main.jsx
+
+
+
+COSAS DOMINGO 10
+🧠 PLAN REALISTA (mañana)
+🥇 1. Backend primero (datos reales)
+
+Antes de tocar frontend otra vez:
+
+crear tracks reales en Django (aunque sean “seeded”)
+añadir:
+audio_file (aunque sea dummy al principio)
+cover_image
+genre bien usado
+ratings / plays con algo de coherencia
+
+👉 objetivo: DB con contenido creíble
+
+🥈 2. Seeder / datos de prueba
+
+Aquí es donde le das “vida” a la app:
+
+10–50 tracks realistas
+varios géneros
+algunos usuarios/artistas
+ratings simulados
+
+👉 esto es lo que luego hace que Discover “funcione”
+
+🥉 3. API Discover (backend manda todo)
+
+Creas endpoint:
+
+GET /api/v1/discover/
+
+y ahí el backend devuelve:
+
+trending
+summer
+emerging
+taste
+
+👉 IMPORTANTE: el frontend ya no decide nada
+
+⚛️ 4. Frontend (axios ya conectado)
+
+Ahí haces el swap:
+
+mock / slices → axios.get("/discover/")
+
+y listo.

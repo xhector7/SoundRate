@@ -15,4 +15,5 @@ router.register(r"profiles", views.ProfileViewSet, basename="profiles")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("register/", views.RegisterView.as_view(), name="register"),
 ]
