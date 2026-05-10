@@ -36,11 +36,23 @@ class AlbumSerializer(serializers.ModelSerializer):
 
 # 🎧 TRACK
 class TrackSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(read_only=True)
+    owner = UserSerializer(read_only=True)
+
     class Meta:
         model = Track
-        fields = "__all__"
-        read_only_fields = ["owner", "plays", "average_rating", "ratings_count"]
-
+        fields = [
+            "id",
+            "title",
+            "slug",
+            "audio_file",
+            "cover_image",
+            "genre",
+            "owner",
+            "plays",
+            "average_rating",
+            "created_at",
+        ]
 
 # 💬 COMMENT
 class CommentSerializer(serializers.ModelSerializer):
@@ -181,3 +193,18 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+    
+
+
+class RecommendationSerializer(serializers.Serializer):
+    key = serializers.CharField()
+    title = serializers.CharField()
+    tracks = TrackSerializer(many=True)
+
+
+#nos devuelve la imagen de portada de la cancion
+def get_cover_image(self, obj):
+    request = self.context.get("request")
+    if obj.cover_image:
+        return request.build_absolute_uri(obj.cover_image.url)
+    return None

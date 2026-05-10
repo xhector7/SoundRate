@@ -1,26 +1,57 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-function WaveformBar({ heights, accent, playing }) {
+function WaveformBar({ heights = [], accent = "#fff", playing }) {
   return (
     <div className="flex items-center gap-0.5 h-9">
       {heights.map((h, i) => (
-        <div key={i} style={{
-          width: "3px",
-          height: `${Math.max(4, (h / 58) * 36)}px`,
-          background: accent,
-          borderRadius: "2px",
-          opacity: playing ? 1 : 0.3,
-          transition: "opacity 0.3s",
-          animation: playing ? `srPulse${i % 4} ${0.4 + (i % 5) * 0.1}s ease-in-out infinite alternate` : "none",
-        }} />
+        <div
+          key={i}
+          style={{
+            width: "3px",
+            height: `${Math.max(4, (h / 58) * 36)}px`,
+            background: accent,
+            borderRadius: "2px",
+            opacity: playing ? 1 : 0.3,
+            transition: "opacity 0.3s",
+            animation: playing
+              ? `srPulse${i % 4} ${0.4 + (i % 5) * 0.1}s ease-in-out infinite alternate`
+              : "none",
+          }}
+        />
       ))}
     </div>
   );
 }
 
+function PlayIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+      <polygon points="3,1 13,7 3,13" />
+    </svg>
+  );
+}
+
+function PauseIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+      <rect x="2" y="1" width="4" height="12" rx="1" />
+      <rect x="8" y="1" width="4" height="12" rx="1" />
+    </svg>
+  );
+}
+
 export default function TrackCard({ track, onPlay, isPlaying }) {
   const [hovered, setHovered] = useState(false);
+
+  const accent = track.accent || "#00c9b1";
+  const genreName = track.genre?.name ?? "Unknown";
+  const artistName = track.owner?.username ?? "Unknown";
+  const coverSrc = track.cover_image
+  ? track.cover_image.startsWith("http")
+    ? track.cover_image
+    : `http://127.0.0.1:8000${track.cover_image}`
+  : "/placeholder.jpg";
 
   return (
     <>
@@ -29,65 +60,125 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
         @keyframes srPulse1 { from{height:35%} to{height:80%} }
         @keyframes srPulse2 { from{height:65%} to{height:95%} }
         @keyframes srPulse3 { from{height:45%} to{height:85%} }
+        @keyframes srDot { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }
       `}</style>
+
+      {/* CARD */}
       <div
+        className="relative rounded-2xl p-5 overflow-hidden cursor-pointer"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="relative rounded-2xl p-5 overflow-hidden transition-all duration-300 cursor-pointer"
         style={{
-          background: `linear-gradient(135deg, ${track.color} 0%, rgba(15,15,18,0.95) 100%)`,
-          border: `1px solid ${hovered ? track.accent + "55" : "rgba(255,255,255,0.07)"}`,
-          transform: hovered ? "translateY(-5px) scale(1.02)" : "translateY(0) scale(1)",
-          boxShadow: hovered ? `0 16px 50px ${track.accent}22` : "none",
-          transition: "transform 0.3s cubic-bezier(.34,1.56,.64,1), border-color 0.3s, box-shadow 0.3s",
+          border: `1px solid ${hovered ? accent + "55" : "rgba(255,255,255,0.07)"}`,
+          transform: hovered ? "translateY(-5px) scale(1.02)" : "none",
+          boxShadow: hovered ? `0 16px 50px ${accent}22` : "none",
+          transition: "0.3s",
         }}
       >
-        {/* glow */}
-        <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full pointer-events-none transition-opacity duration-300"
-          style={{ background: track.accent, opacity: hovered ? 0.1 : 0.04, filter: "blur(30px)" }}
+
+        {/* 🖼️ IMAGEN DE FONDO */}
+        <img
+          src={coverSrc}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            transform: hovered ? "scale(1.08)" : "scale(1)",
+            transition: "transform 0.6s ease",
+          }}
         />
 
-        {/* género + rating */}
-        <div className="flex justify-between items-start mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
-            style={{ color: track.accent, background: track.accent + "18" }}
-          >
-            {track.genre}
-          </span>
-          <div className="text-right">
-            <div className="text-lg font-black text-white leading-none">{track.rating}</div>
-            <div className="text-[10px] text-white/30 mt-0.5">{track.reviews} votos</div>
-          </div>
-        </div>
+        {/* 🌑 OVERLAY */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.85))",
+          }}
+        />
 
-        {/* waveform */}
-        <div className="mb-3">
-          <WaveformBar heights={track.waveform} accent={track.accent} playing={isPlaying} />
-        </div>
+        {/* 📦 CONTENIDO */}
+        <div className="relative z-10">
 
-        {/* info */}
-        <h3 className="text-sm font-bold text-white mb-1">{track.title}</h3>
-        <p className="text-xs text-white/40 mb-4">{track.artist}</p>
-
-        {/* acciones */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => onPlay && onPlay(track)}
-            className="flex-1 py-1.5 rounded-lg text-xs font-bold cursor-pointer border-none transition-all duration-200"
-            style={{
-              background: isPlaying ? track.accent : "rgba(255,255,255,0.08)",
-              color: isPlaying ? "#0f0f12" : "#fff",
-            }}
-          >
-            {isPlaying ? "⏸ Pausa" : "▶ Play"}
-          </button>
-          <Link to={`/track/${track.id}`} className="flex-1">
-            <button className="w-full py-1.5 rounded-lg text-xs font-bold cursor-pointer bg-transparent transition-all duration-200"
-              style={{ border: `1px solid ${track.accent}55`, color: track.accent }}
+          {/* género */}
+          <div className="flex justify-between mb-3">
+            <span
+              className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+              style={{ color: accent, background: accent + "18" }}
             >
-              Ver →
+              {genreName}
+            </span>
+          </div>
+
+          {/* waveform */}
+          <WaveformBar
+            heights={track.waveform || []}
+            accent={accent}
+            playing={isPlaying}
+          />
+
+          {/* info */}
+          <h3 className="text-sm font-bold mt-3 text-white">
+            {track.title}
+          </h3>
+          <p className="text-xs text-white/60">
+            {artistName}
+          </p>
+
+          {/* acciones */}
+          <div className="flex items-center gap-2 mt-4">
+
+            {/* play */}
+            <button
+              onClick={() => onPlay(track)}
+              className="w-9 h-9 flex items-center justify-center rounded-full transition cursor-pointer"
+              style={{
+                background: isPlaying ? accent : "rgba(255,255,255,0.1)",
+                color: isPlaying ? "#000" : "#fff",
+                boxShadow: isPlaying ? `0 0 14px ${accent}66` : "none",
+              }}
+            >
+              {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </button>
-          </Link>
+
+            {/* estado */}
+            {isPlaying ? (
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-1 rounded-full"
+                    style={{
+                      height: "12px",
+                      background: accent,
+                      animation: `srDot ${0.4 + i * 0.15}s ease-in-out infinite alternate`,
+                    }}
+                  />
+                ))}
+                <span
+                  className="text-[10px] uppercase font-bold ml-1 "
+                  style={{ color: accent }}
+                >
+                  Reproduciendo
+                </span>
+              </div>
+            ) : (
+              <span className="text-[10px] text-white/30 uppercase flex-1">
+                {track.duration || ""}
+              </span>
+            )}
+
+            {/* ver */}
+            <Link
+              to={`/track/${track.id}`}
+              className="text-[10px] px-3 py-1 rounded-lg border"
+              style={{
+                borderColor: accent + "44",
+                color: accent,
+              }}
+            >
+              Ver
+            </Link>
+
+          </div>
         </div>
       </div>
     </>

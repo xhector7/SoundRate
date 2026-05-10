@@ -16,4 +16,9 @@ router.register(r"profiles", views.ProfileViewSet, basename="profiles")
 urlpatterns = [
     path("", include(router.urls)),
     path("register/", views.RegisterView.as_view(), name="register"),
+    path("recommendations/trending/", views.TrendingRecommendationsView.as_view()),
+    path("recommendations/seasonal/", views.SeasonalRecommendationsView.as_view()),
+    path("recommendations/emerging/", views.EmergingRecommendationsView.as_view()),
+    path("recommendations/taste/", views.TasteRecommendationsView.as_view()),
+    path("tracks/<int:track_id>/play/",views.IncrementPlayView.as_view()),
 ]

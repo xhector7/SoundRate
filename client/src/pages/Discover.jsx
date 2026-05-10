@@ -1,17 +1,49 @@
-import { useState } from "react";
-import { tracks } from "../services/tracks";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import RecommendationRow from "../components/RecommendationRow";
-
-const ROWS = [
-  { rowKey: "trending", slice: [0, 6] },
-  { rowKey: "summer",   slice: [2, 8] },
-  { rowKey: "emerging", slice: [1, 7] },
-  { rowKey: "taste",    slice: [3, 9] },
-];
+import { usePlayer } from "../context/PlayerContext";
 
 export default function Discover() {
-  const [playingId, setPlayingId] = useState(null);
-  const handlePlay = (track) => setPlayingId(playingId === track.id ? null : track.id);
+  const [rows, setRows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { handlePlay, isTrackActive } = usePlayer();
+
+  useEffect(() => {
+    const fetchRecommendations = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("access");
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const requests = [
+          axios.get("http://127.0.0.1:8000/api/v1/recommendations/trending/", { headers }),
+          axios.get("http://127.0.0.1:8000/api/v1/recommendations/seasonal/", { headers }),
+          axios.get("http://127.0.0.1:8000/api/v1/recommendations/emerging/", { headers }),
+        ];
+
+        if (token) {
+          requests.push(
+            axios.get("http://127.0.0.1:8000/api/v1/recommendations/taste/", { headers })
+          );
+        }
+
+        const responses = await Promise.allSettled(requests);
+        const data = responses
+          .filter((r) => r.status === "fulfilled")
+          .map((r) => r.value?.data)
+          .filter(Boolean);
+
+        setRows(data);
+      } catch (err) {
+        console.error("Error loading recommendations:", err);
+        setRows([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendations();
+  }, []);
 
   return (
     <div className="min-h-screen bg-bg text-white px-16 py-32">
@@ -27,15 +59,21 @@ export default function Discover() {
         <p className="text-sm text-muted">Música nueva, recomendaciones y tendencias para ti</p>
       </div>
 
-      {ROWS.map(({ rowKey, slice }, i) => (
-        <RecommendationRow
-            key={rowKey}
-            rowKey={rowKey}
-            tracks={i === 0 ? [...tracks, ...tracks] : tracks.slice(...slice)}
-            onPlay={handlePlay}
-            playingId={playingId}
-        />
-        ))}
+      {loading ? (
+        <p className="text-white/40">Cargando recomendaciones...</p>
+      ) : (
+        rows.map((row) => (
+          <RecommendationRow
+            key={row.key}
+            rowKey={row.key}
+            title={row.title}
+            tag={row.tag}
+            tracks={row.tracks}
+            onPlay={(track) => handlePlay(track)}
+            isPlaying={(track) => isTrackActive(track)}     
+          />
+        ))
+      )}
     </div>
   );
 }
