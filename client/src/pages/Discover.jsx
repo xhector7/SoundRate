@@ -46,7 +46,7 @@ export default function Discover() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-bg text-white px-16 py-32">
+    <div className="min-h-screen bg-bg text-white px-4 sm:px-8 md:px-16 py-32">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&display=swap');
         .syne { font-family: 'Syne', sans-serif; }
@@ -70,7 +70,7 @@ export default function Discover() {
             tag={row.tag}
             tracks={row.tracks}
             onPlay={(track) => handlePlay(track)}
-            isPlaying={(track) => isTrackActive(track)}     
+            isPlaying={(track) => isTrackActive(track)}
           />
         ))
       )}

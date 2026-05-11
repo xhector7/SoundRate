@@ -45,7 +45,7 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
   const [hovered, setHovered] = useState(false);
 
   const accent = track.accent || "#00c9b1";
-  const genreName = track.genre?.name ?? "Unknown";
+  const genreName = typeof track.genre === "string" ? track.genre : track.genre?.name ?? "Unknown";
   const artistName = track.owner?.username ?? "Unknown";
   const coverSrc = track.cover_image
   ? track.cover_image.startsWith("http")

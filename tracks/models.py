@@ -141,6 +141,12 @@ class Track(models.Model):
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    def update_rating_stats(self):
+        from django.db.models import Avg
+        ratings = self.ratings.all()
+        self.ratings_count = ratings.count()
+        self.average_rating = ratings.aggregate(Avg("score"))["score__avg"] or 0
+        self.save(update_fields=["average_rating", "ratings_count"])
 
     def __str__(self):
         return self.title

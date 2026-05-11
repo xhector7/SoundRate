@@ -34,10 +34,29 @@ class AlbumSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# 🎧 TRACK
+
+class CommentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Comment
+        fields = ["id", "text", "user", "created_at"]
+
+
 class TrackSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(read_only=True)
+
+    # relaciones básicas
+    genre = serializers.StringRelatedField()
     owner = UserSerializer(read_only=True)
+
+    # métricas
+    comments_count = serializers.IntegerField(source="comments_total", read_only=True)
+    favorites_count = serializers.IntegerField(source="favorites_total", read_only=True)
+    ratings_count = serializers.IntegerField(source="ratings_total", read_only=True)
+
+    # UX del usuario actual (MUY IMPORTANTE)
+    user_has_favorited = serializers.SerializerMethodField()
+    user_rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Track
@@ -49,24 +68,43 @@ class TrackSerializer(serializers.ModelSerializer):
             "cover_image",
             "genre",
             "owner",
+
+            # stats
             "plays",
             "average_rating",
+            "comments_count",
+            "favorites_count",
+            "ratings_count",
+
+            # user context
+            "user_has_favorited",
+            "user_rating",
+
             "created_at",
         ]
 
-# 💬 COMMENT
-class CommentSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+  
 
-    class Meta:
-        model = Comment
-        fields = "__all__"
+    # -------------------
+    # USER CONTEXT (clave UX)
+    # -------------------
+    def get_user_has_favorited(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+
+        return obj.favorites.filter(user=request.user).exists()
+
+    def get_user_rating(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return None
+
+        rating = obj.ratings.filter(user=request.user).first()
+        return rating.score if rating else None
 
 
-
-
-
-# ⭐ RATING
+# ⭐ RATING serializer
 class RatingSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
@@ -74,17 +112,9 @@ class RatingSerializer(serializers.ModelSerializer):
         model = Rating
         fields = "__all__"
 
-        
-    
     def validate(self, data):
-        user = self.context["request"].user
-        track = data["track"]
-
-        if Rating.objects.filter(user=user, track=track).exists():
-            raise serializers.ValidationError("Ya has calificado este track.")
-        
+        # Sin validación de duplicado — lo maneja update_or_create en la view
         return data
-
 
 # ❤️ FAVORITE
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -95,10 +125,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, data):
-        user = self.context["request"].user
+        request = self.context.get("request")
+        user = request.user if request else None
         track = data["track"]
 
-        if Favorite.objects.filter(user=user, track=track).exists():
+        if user and Favorite.objects.filter(user=user, track=track).exists():
             raise serializers.ValidationError("Ya está en favoritos")
 
         return data
@@ -114,13 +145,14 @@ class FollowSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def validate(self, data):
-        user = self.context["request"].user
+        request = self.context.get("request")
+        user = request.user if request else None
         following = data["following"]
 
-        if user == following:
+        if user and user == following:
             raise serializers.ValidationError("No puedes seguirte a ti mismo")
 
-        if Follow.objects.filter(follower=user, following=following).exists():
+        if user and Follow.objects.filter(follower=user, following=following).exists():
             raise serializers.ValidationError("Ya sigues a este usuario")
 
         return data
@@ -159,13 +191,6 @@ class LoginSerializer(serializers.Serializer):
 #serializer del register, definimos que datos esperamos y que datos devolvemos y el error q lanzamos, eso define el serializer.
 #la logica se hace en views, el serializer se encarga de validar y formatear los datos a JSON y de lanzar errores si los datos
 
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-
-
-from django.contrib.auth.models import User
-from rest_framework import serializers
-
 class RegisterSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True)
@@ -201,10 +226,3 @@ class RecommendationSerializer(serializers.Serializer):
     title = serializers.CharField()
     tracks = TrackSerializer(many=True)
 
-
-#nos devuelve la imagen de portada de la cancion
-def get_cover_image(self, obj):
-    request = self.context.get("request")
-    if obj.cover_image:
-        return request.build_absolute_uri(obj.cover_image.url)
-    return None

@@ -18,31 +18,47 @@ from .serializer import LoginSerializer
 from .serializer import RegisterSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.db.models import F, FloatField, ExpressionWrapper
+from django.db.models import F, Count, FloatField, ExpressionWrapper
 from django.utils import timezone
 
+from .serializer import LoginSerializer, RegisterSerializer  
 
 
-
-# 🎧 TRACKS
 class TrackViewSet(viewsets.ModelViewSet):
-    queryset = Track.objects.all().order_by("-id")
-    serializer_class = TrackSerializer
+    queryset = Track.objects.all().annotate(
+    comments_total=Count("comments"),
+    favorites_total=Count("favorites"),
+    ratings_total=Count("ratings"),
+    ).order_by("-id")
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def get_serializer_class(self):
+        return TrackSerializer
+
+    def get_serializer_context(self):
+        return {"request": self.request}
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-
 # 💬 COMMENTS
+
 class CommentViewSet(viewsets.ModelViewSet):
+
     queryset = Comment.objects.all().order_by("-id")
     serializer_class = CommentSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        queryset = Comment.objects.all().order_by("-id")
+        track_id = self.request.query_params.get("track")
+
+        if track_id:
+            queryset = queryset.filter(track_id=track_id)
+
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
 
 # ⭐ RATINGS
 class RatingViewSet(viewsets.ModelViewSet):
@@ -50,13 +66,16 @@ class RatingViewSet(viewsets.ModelViewSet):
     serializer_class = RatingSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    #recoge el request para poder usarlo en validaciones personalizadas (ej: evitar que un usuario califique un track mas de una vez)
     def get_serializer_context(self):
         return {"request": self.request}
-    
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        instance, _ = Rating.objects.update_or_create(
+            user=self.request.user,
+            track=serializer.validated_data["track"],
+            defaults={"score": serializer.validated_data["score"]}
+        )
+        instance.track.update_rating_stats()
     
 
 
@@ -174,12 +193,12 @@ class TrendingRecommendationsView(APIView):
             "key": "trending",
             "title": "Trending ahora",
             "tag": "POPULAR",
-            "tracks": TrackSerializer(tracks, many=True).data or []
+            "tracks": TrackSerializer(tracks, many=True, context={"request": request}).data  # ✅ or []
         })
 
 
 # ☀️ SEASONAL
-SUMMER_GENRES = ["Reggaeton", "Pop", "EDM", "Afrobeats", "Chill"]
+SUMMER_GENRES = ["Reggaeton", "Pop", "EDM", "Afrobeats", "Chill", "Flamenco Urbano", "Electronic"]
 
 class SeasonalRecommendationsView(APIView):
     def get(self, request):
@@ -195,7 +214,7 @@ class SeasonalRecommendationsView(APIView):
             "key": "seasonal",
             "title": "Verano vibes",
             "tag": "SEASONAL",
-            "tracks": TrackSerializer(tracks, many=True).data or []
+            "tracks": TrackSerializer(tracks, many=True, context={"request": request}).data   or []
         })
 
 
@@ -216,7 +235,7 @@ class EmergingRecommendationsView(APIView):
             "key": "emerging",
             "title": "Artistas emergentes",
             "tag": "NUEVO",
-            "tracks": TrackSerializer(tracks, many=True).data or []
+            "tracks": TrackSerializer(tracks, many=True, context={"request": request}).data or []
         })
 
 
@@ -244,7 +263,7 @@ class TasteRecommendationsView(APIView):
             "key": "taste",
             "title": "Para ti",
             "tag": "PARA TI",
-            "tracks": TrackSerializer(tracks, many=True).data or []
+            "tracks": TrackSerializer(tracks, many=True, context={"request": request}).data or []
         })
     
 
@@ -273,3 +292,26 @@ class IncrementPlayView(APIView):
                 {"error": "Track not found"},
                 status=status.HTTP_404_NOT_FOUND
             )
+        
+
+#mostrara canciones relacionadas a la que se esta reproduciendo, para fomentar el descubrimiento de musica similar,
+#  y aumentar el tiempo de uso de la app, y la satisfaccion del usuario, esto es un ejemplo de como a veces hay que crear apis muy especificas para ciertas funcionalidades, y no siempre todo se puede meter en un mismo endpoint
+class RelatedTracksView(APIView):
+    def get(self, request, track_id):
+        try:
+            track = Track.objects.get(id=track_id)
+        except Track.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+
+        related = (
+            Track.objects.filter(is_public=True, genre=track.genre)
+            .exclude(id=track_id)
+            .annotate(
+                comments_total=Count("comments"),
+                favorites_total=Count("favorites"),
+                ratings_total=Count("ratings"),
+            )
+            .order_by("-plays")[:10]
+        )
+
+        return Response(TrackSerializer(related, many=True, context={"request": request}).data)

@@ -21,4 +21,5 @@ urlpatterns = [
     path("recommendations/emerging/", views.EmergingRecommendationsView.as_view()),
     path("recommendations/taste/", views.TasteRecommendationsView.as_view()),
     path("tracks/<int:track_id>/play/",views.IncrementPlayView.as_view()),
+    path("tracks/<int:track_id>/related/", views.RelatedTracksView.as_view()),
 ]
