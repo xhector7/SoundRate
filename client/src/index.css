@@ -10,5 +10,12 @@
   --color-border: #2a2a35;
 }
  
+body {
+  background-color: #0f0f12;
+}
 
-
+@keyframes srPulse0 { from{height:55%} to{height:100%} }
+@keyframes srPulse1 { from{height:35%} to{height:80%} }
+@keyframes srPulse2 { from{height:65%} to{height:95%} }
+@keyframes srPulse3 { from{height:45%} to{height:85%} }
+@keyframes srDot { from{transform:scaleY(0.4)} to{transform:scaleY(1)} }

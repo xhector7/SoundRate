@@ -22,6 +22,10 @@ from django.db.models import F, Count, FloatField, ExpressionWrapper
 from django.utils import timezone
 
 from .serializer import LoginSerializer, RegisterSerializer  
+from .serializer import ArtistProfileSerializer
+from django.contrib.auth.models import User
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 
 class TrackViewSet(viewsets.ModelViewSet):
@@ -31,6 +35,8 @@ class TrackViewSet(viewsets.ModelViewSet):
     ratings_total=Count("ratings"),
     ).order_by("-id")
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+
+    parser_classes = [MultiPartParser, FormParser]  # 👈 ESTO ES CLAVE
 
     def get_serializer_class(self):
         return TrackSerializer
@@ -315,3 +321,19 @@ class RelatedTracksView(APIView):
         )
 
         return Response(TrackSerializer(related, many=True, context={"request": request}).data)
+    
+
+#api de perfil d artista publico, nosotros o un random
+
+
+class ArtistProfileView(APIView):
+    def get(self, request, username):
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response({"error": "Usuario no encontrado"}, status=404)
+
+        profile, _ = Profile.objects.get_or_create(user=user)
+
+        serializer = ArtistProfileSerializer(profile, context={"request": request})
+        return Response(serializer.data)

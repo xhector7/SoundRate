@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 export default function Comments({ trackId }) {
@@ -9,16 +9,12 @@ export default function Comments({ trackId }) {
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("access");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   useEffect(() => {
     const fetchComments = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(
-          `http://127.0.0.1:8000/api/v1/comments/?track=${trackId}`,
-          { headers }
-        );
+        const res = await api.get(`comments/?track=${trackId}`);
         setComments(res.data);
       } catch (err) {
         console.error(err);
@@ -33,11 +29,7 @@ export default function Comments({ trackId }) {
   const handleComment = async () => {
     if (!token || !newComment.trim()) return;
     try {
-      const res = await axios.post(
-        `http://127.0.0.1:8000/api/v1/comments/`,
-        { track: trackId, text: newComment },
-        { headers }
-      );
+      const res = await api.post(`comments/`, { track: trackId, content: newComment });
       setComments((prev) => [res.data, ...prev]);
       setNewComment("");
     } catch (err) {
@@ -51,7 +43,6 @@ export default function Comments({ trackId }) {
         Comentarios · {comments.length}
       </p>
 
-      {/* INPUT */}
       {token ? (
         <div className="flex gap-3 mb-6">
           <input
@@ -84,12 +75,9 @@ export default function Comments({ trackId }) {
         </p>
       )}
 
-      {/* LISTA */}
       <div className="space-y-4">
         {loading && (
-          <p className="mono text-[10px] text-white/20 uppercase tracking-widest">
-            Cargando...
-          </p>
+          <p className="mono text-[10px] text-white/20 uppercase tracking-widest">Cargando...</p>
         )}
         {!loading && comments.length === 0 && (
           <p className="text-sm text-white/20">Sin comentarios todavía.</p>
@@ -104,7 +92,7 @@ export default function Comments({ trackId }) {
             </div>
             <div>
               <p className="text-xs text-white/40 mb-0.5">@{c.user?.username}</p>
-              <p className="text-sm text-white/80">{c.text}</p>
+              <p className="text-sm text-white/80">{c.content}</p>
             </div>
           </div>
         ))}

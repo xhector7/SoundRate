@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from .models import Track, Comment, Follow, Rating, Favorite, Album, Genre, Profile
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.db.models import Count
 
 # 👤 USER SIMPLE (para evitar problemas circulares)
 class UserSerializer(serializers.ModelSerializer):
@@ -34,13 +35,19 @@ class AlbumSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-
 class CommentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
 
     class Meta:
         model = Comment
-        fields = ["id", "text", "user", "created_at"]
+        fields = [
+            "id",
+            "content",
+            "track",
+            "user",
+            "timestamp",
+            "created_at",
+        ]
 
 
 class TrackSerializer(serializers.ModelSerializer):
@@ -57,6 +64,9 @@ class TrackSerializer(serializers.ModelSerializer):
     # UX del usuario actual (MUY IMPORTANTE)
     user_has_favorited = serializers.SerializerMethodField()
     user_rating = serializers.SerializerMethodField()
+
+    audio_file = serializers.FileField()
+    cover_image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = Track
@@ -226,3 +236,60 @@ class RecommendationSerializer(serializers.Serializer):
     title = serializers.CharField()
     tracks = TrackSerializer(many=True)
 
+
+#serializer d perfiles de artistas q podemos ser nostros o un tio random
+
+class ArtistProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    tracks = serializers.SerializerMethodField()
+    followers_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+    total_plays = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Profile
+        fields = [
+            "user",
+            "display_name",
+            "avatar",
+            "banner",
+            "bio",
+            "instagram_url",
+            "twitter_url",
+            "youtube_url",
+            "soundcloud_url",
+            "followers_count",
+            "following_count",
+            "total_plays",
+            "is_following",
+            "tracks",
+            "created_at",
+        ]
+
+    def get_tracks(self, obj):
+        tracks = Track.objects.filter(
+            owner=obj.user, is_public=True
+        ).annotate(
+            comments_total=Count("comments"),
+            favorites_total=Count("favorites"),
+            ratings_total=Count("ratings"),
+        ).order_by("-created_at")
+        return TrackSerializer(tracks, many=True, context=self.context).data
+
+    def get_followers_count(self, obj):
+        return Follow.objects.filter(following=obj.user).count()
+
+    def get_following_count(self, obj):
+        return Follow.objects.filter(follower=obj.user).count()
+
+    def get_total_plays(self, obj):
+        from django.db.models import Sum
+        result = Track.objects.filter(owner=obj.user).aggregate(Sum("plays"))
+        return result["plays__sum"] or 0
+
+    def get_is_following(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(follower=request.user, following=obj.user).exists()

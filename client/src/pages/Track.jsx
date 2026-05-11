@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import api from "../services/api";
+
 import { usePlayer } from "../context/PlayerContext";
 import Comments from "../components/Comments";
-
+import { useParams, useNavigate, Link } from "react-router-dom";
 export default function Track() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -12,17 +12,15 @@ export default function Track() {
   const [track, setTrack] = useState(null);
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const token = localStorage.getItem("access");
-  const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
         const [trackRes, relatedRes] = await Promise.all([
-          axios.get(`http://127.0.0.1:8000/api/v1/tracks/${id}/`, { headers }),
-          axios.get(`http://127.0.0.1:8000/api/v1/tracks/${id}/related/`, { headers }),
+          api.get(`tracks/${id}/`),
+          api.get(`tracks/${id}/related/`),
         ]);
         setTrack(trackRes.data);
         setRelated(relatedRes.data);
@@ -39,11 +37,11 @@ export default function Track() {
     if (!token) return;
     try {
       if (track.user_has_favorited) {
-        const favRes = await axios.get(`http://127.0.0.1:8000/api/v1/favorites/?track=${id}`, { headers });
+        const favRes = await api.get(`favorites/?track=${id}`);
         const fav = favRes.data.find((f) => f.track === parseInt(id));
-        if (fav) await axios.delete(`http://127.0.0.1:8000/api/v1/favorites/${fav.id}/`, { headers });
+        if (fav) await api.delete(`favorites/${fav.id}/`);
       } else {
-        await axios.post(`http://127.0.0.1:8000/api/v1/favorites/`, { track: id }, { headers });
+        await api.post(`favorites/`, { track: id });
       }
       setTrack((prev) => ({
         ...prev,
@@ -58,7 +56,7 @@ export default function Track() {
   const handleRate = async (score) => {
     if (!token) return;
     try {
-      await axios.post(`http://127.0.0.1:8000/api/v1/ratings/`, { track: id, score }, { headers });
+      await api.post(`ratings/`, { track: id, score });
       setTrack((prev) => ({ ...prev, user_rating: score }));
     } catch (err) {
       console.error(err);
@@ -111,7 +109,9 @@ export default function Track() {
             {track.title}
           </h1>
           <p className="text-sm text-white/50">
-            por <span className="text-white/80 font-medium">@{track.owner?.username}</span>
+            por <Link to={`/artist/${track.owner?.username}`} className="text-white/80 font-medium no-underline hover:text-primary transition-colors duration-200">
+              @{track.owner?.username}
+            </Link>
           </p>
         </div>
       </div>

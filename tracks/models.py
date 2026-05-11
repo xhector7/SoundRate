@@ -1,6 +1,8 @@
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
-
+from django.utils.text import slugify
 
 # =========================
 # GENRE
@@ -147,6 +149,16 @@ class Track(models.Model):
         self.ratings_count = ratings.count()
         self.average_rating = ratings.aggregate(Avg("score"))["score__avg"] or 0
         self.save(update_fields=["average_rating", "ratings_count"])
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            # si ya existe ese slug, añade un sufijo único
+            while Track.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{uuid.uuid4().hex[:6]}"
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

@@ -64,7 +64,20 @@ export default function Navbar() {
         <div className="hidden md:flex gap-3 items-center">
           {user ? (
             <>
-              <Link to="/profile" className="no-underline flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-200"
+              {/* botón subir */}
+              <Link to="/upload" className="no-underline">
+                <button
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold cursor-pointer border-none transition-all duration-200 hover:scale-105"
+                  style={{ background: "rgba(0,201,177,0.12)", color: "#00c9b1", border: "1px solid rgba(0,201,177,0.25)" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(0,201,177,0.2)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "rgba(0,201,177,0.12)"}
+                >
+                  <span style={{ fontSize: "14px", lineHeight: 1 }}>+</span> Subir
+                </button>
+              </Link>
+
+              {/* avatar */}
+              <Link to={`/artist/${user.username}`} className="no-underline flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all duration-200"
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(0,201,177,0.4)"}
                 onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
@@ -74,6 +87,7 @@ export default function Navbar() {
                 </div>
                 <span className="text-sm text-white font-medium">{user.username}</span>
               </Link>
+
               <button onClick={logout} className="text-xs text-white/35 hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none">
                 Salir
               </button>
@@ -97,31 +111,16 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* HAMBURGER — solo móvil — sin display inline para que md:hidden funcione */}
+        {/* HAMBURGER */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           className="md:hidden cursor-pointer bg-transparent border-none -mr-1"
-          style={{ width: 36, height: 36, position: "relative", alignItems: "center", justifyContent: "center" }}
+          style={{ width: 36, height: 36, position: "relative" }}
           aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
         >
-          <span style={{
-            display: "block", width: 20, height: 1.5, background: "white", borderRadius: 2,
-            position: "absolute", top: "50%", left: "50%", marginLeft: -10,
-            transition: "transform 0.2s ease, opacity 0.2s ease",
-            transform: menuOpen ? "translateY(0) rotate(45deg)" : "translateY(-6px)",
-          }} />
-          <span style={{
-            display: "block", width: 20, height: 1.5, background: "white", borderRadius: 2,
-            position: "absolute", top: "50%", left: "50%", marginLeft: -10,
-            transition: "opacity 0.2s ease",
-            opacity: menuOpen ? 0 : 1,
-          }} />
-          <span style={{
-            display: "block", width: 20, height: 1.5, background: "white", borderRadius: 2,
-            position: "absolute", top: "50%", left: "50%", marginLeft: -10,
-            transition: "transform 0.2s ease",
-            transform: menuOpen ? "translateY(0) rotate(-45deg)" : "translateY(6px)",
-          }} />
+          <span style={{ display: "block", width: 20, height: 1.5, background: "white", borderRadius: 2, position: "absolute", top: "50%", left: "50%", marginLeft: -10, transition: "transform 0.2s ease, opacity 0.2s ease", transform: menuOpen ? "translateY(0) rotate(45deg)" : "translateY(-6px)" }} />
+          <span style={{ display: "block", width: 20, height: 1.5, background: "white", borderRadius: 2, position: "absolute", top: "50%", left: "50%", marginLeft: -10, transition: "opacity 0.2s ease", opacity: menuOpen ? 0 : 1 }} />
+          <span style={{ display: "block", width: 20, height: 1.5, background: "white", borderRadius: 2, position: "absolute", top: "50%", left: "50%", marginLeft: -10, transition: "transform 0.2s ease", transform: menuOpen ? "translateY(0) rotate(-45deg)" : "translateY(6px)" }} />
         </button>
       </nav>
 
@@ -143,7 +142,10 @@ export default function Navbar() {
           <div className="flex flex-col gap-2 pt-3">
             {user ? (
               <>
-                <Link to="/profile" className="no-underline flex items-center gap-2 py-2">
+                <Link to="/upload" className="no-underline py-3 text-sm font-bold border-b border-white/5" style={{ color: "#00c9b1" }}>
+                  + Subir track
+                </Link>
+                <Link to={`/artist/${user.username}`} className="no-underline flex items-center gap-2 py-2">
                   <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-bg text-xs font-black">
                     {user.username?.[0]?.toUpperCase()}
                   </div>

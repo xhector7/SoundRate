@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../services/api";
 import RecommendationRow from "../components/RecommendationRow";
 import { usePlayer } from "../context/PlayerContext";
 
@@ -13,18 +13,15 @@ export default function Discover() {
       setLoading(true);
       try {
         const token = localStorage.getItem("access");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
         const requests = [
-          axios.get("http://127.0.0.1:8000/api/v1/recommendations/trending/", { headers }),
-          axios.get("http://127.0.0.1:8000/api/v1/recommendations/seasonal/", { headers }),
-          axios.get("http://127.0.0.1:8000/api/v1/recommendations/emerging/", { headers }),
+          api.get("recommendations/trending/"),
+          api.get("recommendations/seasonal/"),
+          api.get("recommendations/emerging/"),
         ];
 
         if (token) {
-          requests.push(
-            axios.get("http://127.0.0.1:8000/api/v1/recommendations/taste/", { headers })
-          );
+          requests.push(api.get("recommendations/taste/"));
         }
 
         const responses = await Promise.allSettled(requests);

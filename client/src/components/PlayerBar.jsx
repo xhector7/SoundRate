@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 function PlayIcon() {
   return (
@@ -107,6 +108,8 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
           {/* LEFT — info track */}
           <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="relative flex-shrink-0">
+              {/* deberia estar envuelto en un link q redirige al track */}      
+              <Link to={`/track/${track.id}`} className="absolute inset-0 z-10" />       
               <img
                 src={coverSrc}
                 className="w-11 h-11 rounded-lg object-cover"
@@ -130,9 +133,9 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
 
             <div className="min-w-0">
               <p className="pb-syne text-sm font-bold text-white truncate leading-tight">{track.title}</p>
-              <p className="pb-mono text-[10px] truncate mt-0.5" style={{ color: accent }}>
+              <Link to={`/artist/${track.owner?.username}`} className="pb-mono text-[10px] truncate mt-0.5 no-underline hover:underline block" style={{ color: accent }}>
                 {track.owner?.username || "Artista"}
-              </p>
+              </Link>
             </div>
           </div>
 
