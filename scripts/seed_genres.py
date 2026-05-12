@@ -34,6 +34,9 @@ GENRES = [
     ("Darkwave", "darkwave"),
     ("Neo Soul", "neo-soul"),
     ("Future Garage", "future-garage"),
+
+    ("Metal", "metal"),
+    ("Mariachi", "mariachi"),
 ]
 
 for name, slug in GENRES:
