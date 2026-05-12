@@ -8,8 +8,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # -------------------------
 SECRET_KEY = "django-insecure-q!94r-b^c)6!%b1(226#6)qq-7++x4+$czv=be#l1(r02xhd)e"
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = False
+ALLOWED_HOSTS = ["soundrate.ieti.site"]
 
 
 # -------------------------
@@ -115,7 +115,7 @@ USE_TZ = True
 # STATIC / MEDIA
 # -------------------------
 STATIC_URL = "static/"
-
+STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
@@ -130,7 +130,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS (React frontend)
 # -------------------------
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    "https://soundrate.ieti.site",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
