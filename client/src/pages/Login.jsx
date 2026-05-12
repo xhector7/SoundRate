@@ -14,7 +14,7 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      const res = await axios.post("http://127.0.0.1:8000/api/token/", { username, password });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/`, { username, password });
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
       localStorage.setItem("user", JSON.stringify({ username })); // ← aquí

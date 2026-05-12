@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import TrackCard from "../components/TrackCard";
-import { tracks } from "../services/tracks";
+import api from "../services/api";
+import { usePlayer } from "../context/PlayerContext";
 
 const stats = [
   { value: "2.4M+", label: "Tracks valorados" },
@@ -10,8 +11,9 @@ const stats = [
 ];
 
 export default function Home() {
-  const [scrollY, setScrollY]   = useState(0);
-  const [playingId, setPlayingId] = useState(null);
+  const [scrollY, setScrollY] = useState(0);
+  const [featured, setFeatured] = useState([]);
+  const { handlePlay, isTrackActive } = usePlayer();
 
   useEffect(() => {
     const onScroll = () => setScrollY(window.scrollY);
@@ -19,8 +21,11 @@ export default function Home() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handlePlay = (track) => setPlayingId(playingId === track.id ? null : track.id);
-  const featured = tracks.slice(0, 4);
+  useEffect(() => {
+    api.get("recommendations/trending/")
+      .then((res) => setFeatured(res.data.tracks?.slice(0, 4) || []))
+      .catch(console.error);
+  }, []);
 
   return (
     <div className="min-h-screen bg-bg text-white overflow-x-hidden">
@@ -52,10 +57,8 @@ export default function Home() {
         />
       </div>
 
-      {/* ── HERO, contenedor principal ── */}
+      {/* HERO */}
       <section className="relative z-10 min-h-[70vh] flex flex-col justify-center px-10 pt-32 pb-20 max-w-7xl mx-auto">
-
-        {/* pill */}
         <div className="mono fu fu1 inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-7 w-fit text-[10px] tracking-widest uppercase text-primary"
           style={{ background:"rgba(0,201,177,0.1)", border:"1px solid rgba(0,201,177,0.28)" }}
         >
@@ -63,7 +66,6 @@ export default function Home() {
           Plataforma de descubrimiento musical
         </div>
 
-        {/* headline */}
         <h1 className="syne fu fu2 font-black leading-none mb-6 tracking-tight"
           style={{ fontSize:"clamp(2.8rem,7.5vw,6rem)" }}
         >
@@ -75,7 +77,6 @@ export default function Home() {
           Valora canciones. Descubre obsesiones. Construye un perfil que hable por ti mejor que cualquier playlist.
         </p>
 
-        {/* CTAs */}
         <div className="fu fu4 flex gap-3 items-center flex-wrap">
           <Link to="/register" className="no-underline">
             <button
@@ -96,7 +97,6 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* stats */}
         <div className="fu fu5 flex gap-10 mt-14 pt-8 flex-wrap"
           style={{ borderTop:"1px solid rgba(255,255,255,0.06)" }}
         >
@@ -109,7 +109,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── TRENDING ── */}
+      {/* TRENDING */}
       <section className="relative z-10 max-w-7xl mx-auto px-10 pb-24">
         <div className="flex justify-between items-baseline mb-7">
           <div>
@@ -121,13 +121,18 @@ export default function Home() {
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {featured.map(track => (
-            <TrackCard key={track.id} track={track} onPlay={handlePlay} isPlaying={playingId === track.id} />
+          {featured.map((track) => (
+            <TrackCard
+              key={track.id}
+              track={track}
+              onPlay={handlePlay}
+              isPlaying={isTrackActive(track)}
+            />
           ))}
         </div>
       </section>
 
-      {/* ── CTA FINAL, especia d footer q incita a registrarse ── */}
+      {/* CTA FINAL */}
       <section className="relative z-10 mx-10 mb-16 rounded-2xl p-14 text-center overflow-hidden"
         style={{ background:"linear-gradient(135deg,#001a18 0%,#0f0f12 50%,#00100e 100%)", border:"1px solid rgba(0,201,177,0.18)" }}
       >

@@ -23,4 +23,7 @@ urlpatterns = [
     path("tracks/<int:track_id>/play/",views.IncrementPlayView.as_view()),
     path("tracks/<int:track_id>/related/", views.RelatedTracksView.as_view()),
     path("artist/<str:username>/", views.ArtistProfileView.as_view()),
+    path("search/", views.SearchView.as_view()),
+    path("trending/", views.TrendingView.as_view()),
+  
 ]

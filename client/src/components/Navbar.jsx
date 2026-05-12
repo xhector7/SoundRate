@@ -1,11 +1,19 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import api from "../services/api";
 
 export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  
+  // Estados del buscador
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState({ tracks: [], artists: [], genres: [] });
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("user");
@@ -14,7 +22,42 @@ export default function Navbar() {
 
   useEffect(() => {
     setMenuOpen(false);
+    setSearchOpen(false);
+    setQuery("");
   }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults({ tracks: [], artists: [], genres: [] });
+      setSearchOpen(false);
+      return;
+    }
+
+    const delay = setTimeout(async () => {
+      setSearchLoading(true);
+      setSearchOpen(true);
+      try {
+        const res = await api.get(`search/?q=${encodeURIComponent(query)}`);
+        setResults(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setSearchLoading(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(delay);
+  }, [query]);
 
   const logout = () => {
     localStorage.clear();
@@ -25,6 +68,7 @@ export default function Navbar() {
   const links = [
     { to: "/discover", label: "Descubrir" },
     { to: "/trending", label: "Tendencias" },
+    { to: "/library", label: "Biblioteca" },
   ];
 
   return (
@@ -45,6 +89,109 @@ export default function Navbar() {
             Sound<span className="text-primary">Rate</span>
           </span>
         </Link>
+
+        {/* BUSCADOR - desktop */}
+        <div ref={searchRef} className="hidden md:block relative" style={{ width: "320px" }}>
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="rgba(255,255,255,0.4)"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar canciones, artistas..."
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary"
+            />
+          </div>
+          
+          {searchOpen && (
+            <div className="absolute top-full left-0 mt-2 w-full bg-[#1a1a1f] rounded-lg border border-white/10 shadow-xl z-50 max-h-96 overflow-y-auto" onWheel={(e) => e.stopPropagation()}>
+              {searchLoading && (
+                <div className="p-4 text-center text-white/40 text-sm">Buscando...</div>
+              )}
+
+              {!searchLoading && results.artists.length === 0 && results.tracks.length === 0 && results.genres.length === 0 && query && (
+                <div className="p-4 text-center text-white/40 text-sm">No hay resultados</div>
+              )}
+
+              {/* Artistas */}
+              {results.artists.length > 0 && (
+                <div className="p-2">
+                  <p className="text-[9px] uppercase tracking-widest text-white/30 px-2 mb-1">Artistas</p>
+                  {results.artists.map((artist) => (
+                    <Link
+                      key={artist.id}
+                      to={`/artist/${artist.username}`}
+                      onClick={() => setSearchOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-xs font-bold text-primary">{artist.username[0].toUpperCase()}</span>
+                      </div>
+                      <span className="text-sm text-white">@{artist.username}</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Géneros */}
+              {results.genres.length > 0 && (
+                <div className="p-2 border-t border-white/5">
+                  <p className="text-[9px] uppercase tracking-widest text-white/30 px-2 mb-1">Géneros</p>
+                  <div className="flex flex-wrap gap-1 px-2">
+                    {results.genres.map((genre) => (
+                      <Link
+                        key={genre.id}
+                        to={`/genre/${genre.slug}`}
+                        onClick={() => setSearchOpen(false)}
+                        className="px-2 py-1 rounded-full text-xs bg-primary/20 text-primary hover:bg-primary/30 transition-colors"
+                      >
+                        {genre.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Tracks */}
+              {results.tracks.length > 0 && (
+                <div className="p-2 border-t border-white/5">
+                  <p className="text-[9px] uppercase tracking-widest text-white/30 px-2 mb-1">Canciones</p>
+                  {results.tracks.map((track) => (
+                    <Link
+                      key={track.id}
+                      to={`/track/${track.id}`}
+                      onClick={() => setSearchOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                    >
+                      <img 
+                        src={track.cover_image || "/placeholder.jpg"} 
+                        alt={track.title} 
+                        className="w-8 h-8 rounded object-cover" 
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">{track.title}</p>
+                        <p className="text-[10px] text-white/40 truncate">{track.owner?.username}</p>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
 
         {/* LINKS — solo desktop */}
         <div className="hidden md:flex gap-8 items-center">
@@ -130,6 +277,74 @@ export default function Navbar() {
           className="fixed top-16 left-0 right-0 z-40 flex flex-col gap-1 px-6 py-4 md:hidden"
           style={{ background: "rgba(15,15,18,0.97)", backdropFilter: "blur(18px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
+          {/* Buscador móvil */}
+          <div className="mb-3">
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 transform -translate-y-1/2"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="rgba(255,255,255,0.4)"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar canciones, artistas..."
+                className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-sm focus:outline-none focus:border-primary"
+              />
+            </div>
+            {query && (
+              <div className="mt-2 max-h-64 overflow-y-auto">
+                {results.tracks.slice(0, 3).map((track) => (
+                  <Link
+                    key={track.id}
+                    to={`/track/${track.id}`}
+                    onClick={() => { setMenuOpen(false); setQuery(""); }}
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <img src={track.cover_image || "/placeholder.jpg"} alt={track.title} className="w-8 h-8 rounded object-cover" />
+                    <div>
+                      <p className="text-sm text-white">{track.title}</p>
+                      <p className="text-[10px] text-white/40">{track.owner?.username}</p>
+                    </div>
+                  </Link>
+                ))}
+                {results.artists.slice(0, 3).map((artist) => (
+                  <Link
+                    key={artist.id}
+                    to={`/artist/${artist.username}`}
+                    onClick={() => { setMenuOpen(false); setQuery(""); }}
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
+                  >
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="text-xs font-bold text-primary">{artist.username[0].toUpperCase()}</span>
+                    </div>
+                    <span className="text-sm text-white">@{artist.username}</span>
+                  </Link>
+                ))}
+                {results.genres.slice(0, 3).map((genre) => (
+                  <Link
+                    key={genre.id}
+                    to={`/genre/${genre.slug}`}
+                    onClick={() => { setMenuOpen(false); setQuery(""); }}
+                    className="inline-block px-2 py-1 m-1 rounded-full text-xs bg-primary/20 text-primary"
+                  >
+                    {genre.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           {links.map(({ to, label }) => (
             <Link key={to} to={to}
               className="no-underline text-sm font-medium py-3 border-b border-white/5"

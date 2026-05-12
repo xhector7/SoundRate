@@ -12,13 +12,24 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "username"]
 
 
-# 👤 PROFILE
-class ProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
 
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
-        fields = "__all__"
+        fields = '__all__'
+        read_only_fields = ['id', 'user', 'created_at']
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        request = self.context.get('request')
+        
+        # Para que las URLs de imágenes sean completas
+        if instance.avatar and request:
+            representation['avatar'] = request.build_absolute_uri(instance.avatar.url)
+        if instance.banner and request:
+            representation['banner'] = request.build_absolute_uri(instance.banner.url)
+            
+        return representation
 
 
 # 🎵 GENRE
@@ -57,9 +68,10 @@ class TrackSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
 
     # métricas
-    comments_count = serializers.IntegerField(source="comments_total", read_only=True)
-    favorites_count = serializers.IntegerField(source="favorites_total", read_only=True)
-    ratings_count = serializers.IntegerField(source="ratings_total", read_only=True)
+    comments_count = serializers.SerializerMethodField()
+    favorites_count = serializers.SerializerMethodField()
+    ratings_count = serializers.SerializerMethodField()
+
 
     # UX del usuario actual (MUY IMPORTANTE)
     user_has_favorited = serializers.SerializerMethodField()
@@ -93,6 +105,16 @@ class TrackSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
+    # MÉTODOS PARA LAS MÉTRICAS
+    def get_comments_count(self, obj):
+        return obj.comments.count()
+
+    def get_favorites_count(self, obj):
+        return obj.favorites.count()
+
+    def get_ratings_count(self, obj):
+        return obj.ratings.count()
+
   
 
     # -------------------
@@ -117,10 +139,14 @@ class TrackSerializer(serializers.ModelSerializer):
 # ⭐ RATING serializer
 class RatingSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    track = TrackSerializer(read_only=True)
+    track_id = serializers.PrimaryKeyRelatedField(
+        queryset=Track.objects.all(), source="track", write_only=True
+    )
 
     class Meta:
         model = Rating
-        fields = "__all__"
+        fields = ["id", "user", "track", "track_id", "score", "created_at"]
 
     def validate(self, data):
         # Sin validación de duplicado — lo maneja update_or_create en la view
@@ -129,10 +155,14 @@ class RatingSerializer(serializers.ModelSerializer):
 # ❤️ FAVORITE
 class FavoriteSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    track = TrackSerializer(read_only=True)
+    track_id = serializers.PrimaryKeyRelatedField(
+        queryset=Track.objects.all(), source="track", write_only=True
+    )
 
     class Meta:
         model = Favorite
-        fields = "__all__"
+        fields = ["id", "user", "track", "track_id", "created_at"]
 
     def validate(self, data):
         request = self.context.get("request")
@@ -143,7 +173,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Ya está en favoritos")
 
         return data
-
 
 # 👥 FOLLOW
 class FollowSerializer(serializers.ModelSerializer):

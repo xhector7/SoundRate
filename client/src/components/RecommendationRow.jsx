@@ -65,6 +65,12 @@ export default function RecommendationRow({ rowKey, title, tag, tracks = [], onP
           {/* Spacer final para que la última card no quede cortada */}
           <div className="flex-shrink-0 w-4 sm:hidden" />
         </div>
+        {/* EMPTY STATE */}
+        {tracks.length === 0 && (
+          <p className="mono text-[10px] text-white/30 uppercase tracking-widest py-4 px-4 sm:px-0">
+            Escucha y valora canciones para recibir recomendaciones personalizadas
+          </p>
+        )}
 
         <button
           onClick={() => scroll(1)}

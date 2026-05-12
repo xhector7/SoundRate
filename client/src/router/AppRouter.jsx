@@ -8,7 +8,10 @@ import Track from "../pages/Track";
 import Artist from "../pages/Artist";
 import Discover from "../pages/Discover";
 import Upload from "../pages/Upload";
-
+import Library from "../pages/Library";
+import Settings from "../pages/settings";
+import Genre from "../pages/Genre";
+import Trending from "../pages/Trending";
 
 export default function AppRouter() {
   return (
@@ -21,6 +24,11 @@ export default function AppRouter() {
         <Route path="artist/:username" element={<Artist />} />
         <Route path="discover" element={<Discover />} />
         <Route path="upload" element={<Upload />} />
+        <Route path="library" element={<Library />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="/genre/:slug" element={<Genre />} />
+        <Route path="/trending" element={<Trending />} />
+
       </Route>
     </Routes>
   );

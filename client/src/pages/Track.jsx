@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import LikeButton from "../components/LikeButton";
 
 import { usePlayer } from "../context/PlayerContext";
 import Comments from "../components/Comments";
@@ -33,30 +34,10 @@ export default function Track() {
     fetchData();
   }, [id]);
 
-  const handleFavorite = async () => {
-    if (!token) return;
-    try {
-      if (track.user_has_favorited) {
-        const favRes = await api.get(`favorites/?track=${id}`);
-        const fav = favRes.data.find((f) => f.track === parseInt(id));
-        if (fav) await api.delete(`favorites/${fav.id}/`);
-      } else {
-        await api.post(`favorites/`, { track: id });
-      }
-      setTrack((prev) => ({
-        ...prev,
-        user_has_favorited: !prev.user_has_favorited,
-        favorites_count: prev.user_has_favorited ? prev.favorites_count - 1 : prev.favorites_count + 1,
-      }));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleRate = async (score) => {
     if (!token) return;
     try {
-      await api.post(`ratings/`, { track: id, score });
+      await api.post(`ratings/`, { track_id: id, score });
       setTrack((prev) => ({ ...prev, user_rating: score }));
     } catch (err) {
       console.error(err);
@@ -158,19 +139,19 @@ export default function Track() {
               {isTrackActive(track) ? "▐▐ Reproduciendo" : "▶ Reproducir"}
             </button>
 
-            {token && (
-              <button
-                onClick={handleFavorite}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer border-none text-lg"
-                style={{
-                  background: track.user_has_favorited ? "rgba(255,80,80,0.15)" : "rgba(255,255,255,0.05)",
-                  border: `1px solid ${track.user_has_favorited ? "rgba(255,80,80,0.4)" : "rgba(255,255,255,0.1)"}`,
-                  color: track.user_has_favorited ? "#ff5050" : "rgba(255,255,255,0.4)",
-                }}
-              >
-                {track.user_has_favorited ? "♥" : "♡"}
-              </button>
-            )}
+                {/* 👇 SIMPLIFICADO - sin condicional token */}
+            <LikeButton 
+              trackId={track.id}
+              initialLiked={track.user_has_favorited}
+              initialCount={track.favorites_count}
+              onLikeChange={(liked, newCount) => {
+                setTrack(prev => ({
+                  ...prev,
+                  user_has_favorited: liked,
+                  favorites_count: newCount
+                }));
+              }}
+            />
           </div>
         </div>
 

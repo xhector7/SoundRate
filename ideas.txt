@@ -77,3 +77,19 @@ PlayerBar coherente
 estados globales (active track)
 animaciones suaves
 polish (tipografía + spacing)
+
+
+
+track
+-----------------------------------
+| cover | titulo                  |
+|       | artista                 |
+|       | genre · plays · rating  |
+|       | [play] [like] [rate]    |
+-----------------------------------
+
+Descripción / metadata
+
+Comentarios
+
+Tracks relacionadas

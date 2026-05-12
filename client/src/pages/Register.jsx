@@ -24,7 +24,7 @@ export default function Register() {
 
     try {
       const { data } = await axios.post(
-        "http://127.0.0.1:8000/api/v1/register/",
+        `${import.meta.env.VITE_API_URL}/api/v1/register/`,
         form
       );
 

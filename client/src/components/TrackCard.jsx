@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { GENRE_COLORS, DEFAULT_COLOR } from "../services/constants";
+
+const BASE = import.meta.env.VITE_API_URL;
 
 function WaveformBar({ heights = [], accent = "#fff", playing }) {
   return (
@@ -39,12 +42,13 @@ function PauseIcon() {
 export default function TrackCard({ track, onPlay, isPlaying }) {
   const [hovered, setHovered] = useState(false);
 
-  const accent = track.accent || "#00c9b1";
   const genreName = typeof track.genre === "string" ? track.genre : track.genre?.name ?? "Unknown";
   const artistName = track.owner?.username ?? "Unknown";
   const coverSrc = track.cover_image
-    ? track.cover_image.startsWith("http") ? track.cover_image : `http://127.0.0.1:8000${track.cover_image}`
+    ? track.cover_image.startsWith("http") ? track.cover_image : `${BASE}${track.cover_image}`
     : "/placeholder.jpg";
+  const genreKey = genreName?.toLowerCase();
+  const accent = GENRE_COLORS[genreKey] || DEFAULT_COLOR;
 
   return (
     <div
@@ -58,20 +62,13 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
         transition: "0.3s",
       }}
     >
-      {/* imagen fondo */}
       <img src={coverSrc} className="absolute inset-0 w-full h-full object-cover"
         style={{ transform: hovered ? "scale(1.08)" : "scale(1)", transition: "transform 0.6s ease" }}
       />
-
-      {/* overlay */}
       <div className="absolute inset-0"
         style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.85))" }}
       />
-
-      {/* contenido */}
       <div className="relative z-10">
-
-        {/* género */}
         <div className="mb-3">
           <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
             style={{ color: accent, background: accent + "18" }}
@@ -79,19 +76,13 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
             {genreName}
           </span>
         </div>
-
-        {/* waveform */}
         <WaveformBar heights={track.waveform || []} accent={accent} playing={isPlaying} />
-
-        {/* info */}
         <h3 className="text-sm font-bold mt-3 text-white">{track.title}</h3>
         <Link to={`/artist/${track.owner?.username}`}
           className="text-xs text-white/40 hover:text-primary transition-colors no-underline block mb-4"
         >
           {artistName}
         </Link>
-
-        {/* acciones */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => onPlay(track)}
@@ -104,7 +95,6 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
           >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </button>
-
           {isPlaying ? (
             <span className="text-[10px] uppercase font-bold flex-1 truncate" style={{ color: accent }}>
               Reproduciendo
@@ -114,7 +104,6 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
               {track.duration || ""}
             </span>
           )}
-
           <Link to={`/track/${track.id}`}
             className="text-[10px] px-3 py-1 rounded-lg no-underline flex-shrink-0"
             style={{ border: `1px solid ${accent}44`, color: accent }}

@@ -3,6 +3,7 @@ import AppRouter from "./router/AppRouter";
 import { PlayerProvider } from "./context/PlayerContext";
 
 function App() {
+  console.log(import.meta.env.VITE_API_URL)
   return (
     <BrowserRouter>
       <PlayerProvider>

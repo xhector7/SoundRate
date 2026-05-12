@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://127.0.0.1:8000/api/v1/",
+  baseURL: `${import.meta.env.VITE_API_URL}/api/v1/`,
 });
 
 // Añade el token a cada request
@@ -22,7 +22,7 @@ api.interceptors.response.use(
 
       try {
         const refresh = localStorage.getItem("refresh");
-        const res = await axios.post("http://127.0.0.1:8000/api/v1/token/refresh/", { refresh });
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/token/refresh/`, { refresh });
 
         localStorage.setItem("access", res.data.access);
         original.headers.Authorization = `Bearer ${res.data.access}`;
