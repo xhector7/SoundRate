@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # -------------------------
 SECRET_KEY = "django-insecure-q!94r-b^c)6!%b1(226#6)qq-7++x4+$czv=be#l1(r02xhd)e"
 DEBUG = False
-ALLOWED_HOSTS = ["soundrate.ieti.site"]
+ALLOWED_HOSTS = ["*"]
 
 
 # -------------------------
@@ -130,7 +130,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # CORS (React frontend)
 # -------------------------
 CORS_ALLOWED_ORIGINS = [
-    "https://soundrate.ieti.site",
+"https://soundrate.ieti.site",
 ]
 CORS_ALLOW_CREDENTIALS = True
 

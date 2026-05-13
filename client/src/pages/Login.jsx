@@ -1,76 +1,53 @@
 import { useState } from "react";
-<<<<<<< HEAD
-import { login } from "../auth.api";
-=======
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
->>>>>>> origin/pro
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-<<<<<<< HEAD
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      await login(username, password);
-      alert("Login correcto");
-    } catch (error) {
-      alert("Error en login");
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <h2>Login</h2>
-
-      <input
-        placeholder="username"
-        onChange={(e) => setUsername(e.target.value)}
-      />
-
-      <input
-        type="password"
-        placeholder="password"
-        onChange={(e) => setPassword(e.target.value)}
-      />
-
-      <button type="submit">Entrar</button>
-    </form>
-=======
-  const [error, setError]       = useState(null);
-  const [loading, setLoading]   = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(null);
-  setLoading(true);
-  try {
-    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/`, { username, password });
-    
-    localStorage.setItem("access", res.data.access);
-    localStorage.setItem("refresh", res.data.refresh);
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    // fetchea el perfil para obtener el avatar
-    const profileRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/profiles/me/`, {
-      headers: { Authorization: `Bearer ${res.data.access}` }
-    });
+    try {
+      const res = await axios.post(
+        `${import.meta.env.VITE_API_URL}/api/token/`,
+        { username, password }
+      );
 
-    localStorage.setItem("user", JSON.stringify({
-      username,
-      avatar: profileRes.data.avatar
-    }));
+      localStorage.setItem("access", res.data.access);
+      localStorage.setItem("refresh", res.data.refresh);
 
-    navigate("/discover");
-  } catch {
-    setError("Credenciales incorrectas");
-  } finally {
-    setLoading(false);
-  }
-};
+      // fetchea el perfil para obtener el avatar
+      const profileRes = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/v1/profiles/me/`,
+        {
+          headers: { Authorization: `Bearer ${res.data.access}` },
+        }
+      );
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          username,
+          avatar: profileRes.data.avatar,
+        })
+      );
+
+      navigate("/discover");
+    } catch (err) {
+      setError("Credenciales incorrectas");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-bg text-white flex items-center justify-center px-4 overflow-hidden relative">
       <style>{`
@@ -90,20 +67,52 @@ export default function Login() {
 
       {/* orbs de fondo */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute rounded-full" style={{ top:"10%", left:"5%", width:"400px", height:"400px", background:"radial-gradient(circle,rgba(0,201,177,0.07) 0%,transparent 70%)" }} />
-        <div className="absolute rounded-full" style={{ bottom:"10%", right:"5%", width:"350px", height:"350px", background:"radial-gradient(circle,rgba(124,92,255,0.06) 0%,transparent 70%)" }} />
+        <div
+          className="absolute rounded-full"
+          style={{
+            top: "10%",
+            left: "5%",
+            width: "400px",
+            height: "400px",
+            background:
+              "radial-gradient(circle,rgba(0,201,177,0.07) 0%,transparent 70%)",
+          }}
+        />
+        <div
+          className="absolute rounded-full"
+          style={{
+            bottom: "10%",
+            right: "5%",
+            width: "350px",
+            height: "350px",
+            background:
+              "radial-gradient(circle,rgba(124,92,255,0.06) 0%,transparent 70%)",
+          }}
+        />
       </div>
 
       {/* card */}
-      <div className="fu fu1 relative z-10 w-full max-w-sm rounded-2xl p-8 flex flex-col gap-6"
-        style={{ background:"rgba(26,26,34,0.85)", border:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)" }}
+      <div
+        className="fu fu1 relative z-10 w-full max-w-sm rounded-2xl p-8 flex flex-col gap-6"
+        style={{
+          background: "rgba(26,26,34,0.85)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+        }}
       >
         {/* logo */}
         <div className="fu fu1 flex items-center gap-2 mb-2">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
-              <circle cx="9" cy="9" r="7" stroke="#0f0f12" strokeWidth="1.8"/>
-              <circle cx="9" cy="9" r="3" fill="#0f0f12"/>
+              <circle
+                cx="9"
+                cy="9"
+                r="7"
+                stroke="#0f0f12"
+                strokeWidth="1.8"
+              />
+              <circle cx="9" cy="9" r="3" fill="#0f0f12" />
             </svg>
           </div>
           <span className="mono text-sm font-bold text-white">
@@ -113,50 +122,76 @@ export default function Login() {
 
         {/* título */}
         <div className="fu fu2">
-          <h1 className="syne text-2xl font-black tracking-tight mb-1">Bienvenido de nuevo</h1>
-          <p className="text-sm text-muted">Inicia sesión para seguir escuchando</p>
+          <h1 className="syne text-2xl font-black tracking-tight mb-1">
+            Bienvenido de nuevo
+          </h1>
+          <p className="text-sm text-muted">
+            Inicia sesión para seguir escuchando
+          </p>
         </div>
 
         {/* formulario */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="fu fu3 flex flex-col gap-1">
-            <label className="mono text-[10px] uppercase tracking-widest text-muted">Usuario</label>
+            <label className="mono text-[10px] uppercase tracking-widest text-muted">
+              Usuario
+            </label>
             <input
               className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-all duration-200"
-              style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
               placeholder="tu_usuario"
               value={username}
-              onChange={e => setUsername(e.target.value)}
-              onFocus={e => e.target.style.border="1px solid rgba(0,201,177,0.5)"}
-              onBlur={e => e.target.style.border="1px solid rgba(255,255,255,0.08)"}
+              onChange={(e) => setUsername(e.target.value)}
+              onFocus={(e) =>
+                (e.target.style.border = "1px solid rgba(0,201,177,0.5)")
+              }
+              onBlur={(e) =>
+                (e.target.style.border = "1px solid rgba(255,255,255,0.08)")
+              }
             />
           </div>
 
           <div className="fu fu4 flex flex-col gap-1">
-            <label className="mono text-[10px] uppercase tracking-widest text-muted">Contraseña</label>
+            <label className="mono text-[10px] uppercase tracking-widest text-muted">
+              Contraseña
+            </label>
             <input
               type="password"
               className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-all duration-200"
-              style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
               placeholder="••••••••"
               value={password}
-              onChange={e => setPassword(e.target.value)}
-              onFocus={e => e.target.style.border="1px solid rgba(0,201,177,0.5)"}
-              onBlur={e => e.target.style.border="1px solid rgba(255,255,255,0.08)"}
+              onChange={(e) => setPassword(e.target.value)}
+              onFocus={(e) =>
+                (e.target.style.border = "1px solid rgba(0,201,177,0.5)")
+              }
+              onBlur={(e) =>
+                (e.target.style.border = "1px solid rgba(255,255,255,0.08)")
+              }
             />
           </div>
 
-          {error && (
-            <p className="text-red-400 text-xs px-1">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-xs px-1">{error}</p>}
 
           <button
             type="submit"
             disabled={loading}
             className="fu fu5 mt-1 w-full py-3 rounded-xl text-sm font-bold text-bg bg-primary border-none cursor-pointer transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ boxShadow:"0 0 28px rgba(0,201,177,0.25)" }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow="0 0 44px rgba(0,201,177,0.45)"}
-            onMouseLeave={e => e.currentTarget.style.boxShadow="0 0 28px rgba(0,201,177,0.25)"}
+            style={{ boxShadow: "0 0 28px rgba(0,201,177,0.25)" }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 0 44px rgba(0,201,177,0.45)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.boxShadow =
+                "0 0 28px rgba(0,201,177,0.25)")
+            }
           >
             {loading ? "Entrando..." : "Entrar →"}
           </button>
@@ -165,12 +200,14 @@ export default function Login() {
         {/* registro */}
         <p className="fu fu5 text-center text-sm text-muted">
           ¿No tienes cuenta?{" "}
-          <Link to="/register" className="text-primary font-semibold no-underline hover:underline">
+          <Link
+            to="/register"
+            className="text-primary font-semibold no-underline hover:underline"
+          >
             Regístrate gratis
           </Link>
         </p>
       </div>
     </div>
->>>>>>> origin/pro
   );
 }
