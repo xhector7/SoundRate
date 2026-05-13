@@ -1,14 +1,14 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import TracksPage from "./pages/TracksPage";
-import UploadTrackPage from "./pages/UploadTrackPage";
+import { BrowserRouter } from "react-router-dom";
+import AppRouter from "./router/AppRouter";
+import { PlayerProvider } from "./context/PlayerContext";
 
 function App() {
+  console.log(import.meta.env.VITE_API_URL)
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<TracksPage />} />
-        <Route path="/upload" element={<UploadTrackPage />} />
-      </Routes>
+      <PlayerProvider>
+        <AppRouter />
+      </PlayerProvider>
     </BrowserRouter>
   );
 }
