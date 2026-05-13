@@ -1,8 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
 from . import views
-from .views import register
-
 
 router = routers.DefaultRouter()
 
@@ -16,21 +14,15 @@ router.register(r"follows", views.FollowViewSet, basename="follows")
 router.register(r"profiles", views.ProfileViewSet, basename="profiles")
 
 urlpatterns = [
-<<<<<<< HEAD
-    path("", include(router.urls)), 
-    path("register/", register), 
-=======
     path("", include(router.urls)),
     path("register/", views.RegisterView.as_view(), name="register"),
     path("recommendations/trending/", views.TrendingRecommendationsView.as_view()),
     path("recommendations/seasonal/", views.SeasonalRecommendationsView.as_view()),
     path("recommendations/emerging/", views.EmergingRecommendationsView.as_view()),
     path("recommendations/taste/", views.TasteRecommendationsView.as_view()),
-    path("tracks/<int:track_id>/play/",views.IncrementPlayView.as_view()),
+    path("tracks/<int:track_id>/play/", views.IncrementPlayView.as_view()),
     path("tracks/<int:track_id>/related/", views.RelatedTracksView.as_view()),
     path("artist/<str:username>/", views.ArtistProfileView.as_view()),
     path("search/", views.SearchView.as_view()),
     path("trending/", views.TrendingView.as_view()),
-  
->>>>>>> origin/pro
 ]
