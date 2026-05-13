@@ -10,22 +10,32 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
-    try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/`, { username, password });
-      localStorage.setItem("access", res.data.access);
-      localStorage.setItem("refresh", res.data.refresh);
-      localStorage.setItem("user", JSON.stringify({ username })); // ← aquí
-      navigate("/discover");
-    } catch {
-      setError("Credenciales incorrectas");
-    } finally {
-      setLoading(false);
-    }
-  };
+  e.preventDefault();
+  setError(null);
+  setLoading(true);
+  try {
+    const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/`, { username, password });
+    
+    localStorage.setItem("access", res.data.access);
+    localStorage.setItem("refresh", res.data.refresh);
 
+    // fetchea el perfil para obtener el avatar
+    const profileRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/profiles/me/`, {
+      headers: { Authorization: `Bearer ${res.data.access}` }
+    });
+
+    localStorage.setItem("user", JSON.stringify({
+      username,
+      avatar: profileRes.data.avatar
+    }));
+
+    navigate("/discover");
+  } catch {
+    setError("Credenciales incorrectas");
+  } finally {
+    setLoading(false);
+  }
+};
   return (
     <div className="min-h-screen bg-bg text-white flex items-center justify-center px-4 overflow-hidden relative">
       <style>{`

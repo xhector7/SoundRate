@@ -85,10 +85,19 @@ export default function Comments({ trackId }) {
         {comments.map((c) => (
           <div key={c.id} className="flex gap-3">
             <div
-              className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-black"
-              style={{ background: "#00c9b1", color: "#0f0f12" }}
+              className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
+              style={{ background: "#00c9b1" }}
             >
-              {c.user?.username?.[0]?.toUpperCase()}
+              {c.user?.avatar ? (
+                <img src={c.user.avatar} alt={c.user.username} className="w-full h-full object-cover" />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-[10px] font-black"
+                  style={{ color: "#0f0f12" }}
+                >
+                  {c.user?.username?.[0]?.toUpperCase()}
+                </div>
+              )}
             </div>
             <div>
               <p className="text-xs text-white/40 mb-0.5">@{c.user?.username}</p>

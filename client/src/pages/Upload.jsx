@@ -69,7 +69,7 @@ export default function Upload() {
     data.append("description", form.description);
     data.append("is_public", form.is_public);
     data.append("audio_file", audioFile);
-    if (form.genre) data.append("genre", form.genre);
+    if (form.genre) data.append("genre_id", form.genre);
     if (coverFile) data.append("cover_image", coverFile);
 
     try {

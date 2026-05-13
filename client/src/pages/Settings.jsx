@@ -28,10 +28,7 @@ export default function Settings() {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // 👇 AQUÍ PON EL DEBUG
-      console.log("Datos completos del perfil:", res.data);
-      console.log("Banner URL:", res.data.banner);
-      console.log("Avatar URL:", res.data.avatar);
+      
       setProfile({
         display_name: res.data.display_name || "",
         bio: res.data.bio || "",
@@ -83,21 +80,27 @@ export default function Settings() {
   Object.keys(profile).forEach(key => {
     if (profile[key] !== null && profile[key] !== undefined && profile[key] !== "") {
       formData.append(key, profile[key]);
-      console.log(`Enviando: ${key} = ${profile[key]}`); // 👈 LOG
     }
   });
 
   try {
     const token = localStorage.getItem("access");
-    // ✅ USA ESTA URL
-    await api.patch(`profiles/me/`, formData, {
+    const res = await api.patch(`profiles/me/`, formData, {
       headers: { 
         Authorization: `Bearer ${token}`,
         "Content-Type": "multipart/form-data"
       }
     });
+
+    // guarda el avatar actualizado en localStorage
     const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-    navigate(`/artist/${currentUser.username}`);
+    localStorage.setItem("user", JSON.stringify({
+      ...currentUser,
+      avatar: res.data.avatar
+    }));
+
+    const currentUser2 = JSON.parse(localStorage.getItem("user") || "{}");
+    navigate(`/artist/${currentUser2.username}`);
   } catch (err) {
     console.error("Error:", err.response?.data);
     alert("Error al actualizar perfil");

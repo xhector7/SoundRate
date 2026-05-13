@@ -49,6 +49,7 @@ class TrackViewSet(viewsets.ModelViewSet):
         return {"request": self.request}
 
     def perform_create(self, serializer):
+        print("DATA:", self.request.data)
         serializer.save(owner=self.request.user)
 
 # 💬 COMMENTS
