@@ -21,7 +21,25 @@ function PauseIcon() {
   );
 }
 
-export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) {
+function PrevIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <polygon points="19,20 9,12 19,4" />
+      <line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function NextIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <polygon points="5,4 15,12 5,20" />
+      <line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay, onNext, onPrev }) {
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -85,12 +103,42 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
     if (audioRef?.current) audioRef.current.volume = v;
   };
 
+  const handlePrev = () => {
+    const audio = audioRef?.current;
+    console.log("audio:", audio);
+    console.log("currentTime:", audio?.currentTime);
+    if (!audio) return;
+    if (audio.currentTime > 3) {
+      console.log("REBOBINANDO");
+      audio.currentTime = 0;
+      setProgress(0);
+      setCurrentTime(0);
+    } else {
+      console.log("CANCION ANTERIOR");
+      onPrev?.();
+    }
+  };
+
   if (!track) return null;
 
   const accent = track.accent || "#00c9b1";
   const coverSrc = track.cover_image
     ? track.cover_image.startsWith("http") ? track.cover_image : `${BASE}${track.cover_image}`
     : "/placeholder.jpg";
+
+  const btnStyle = {
+    color: "rgba(255,255,255,0.4)",
+    width: 32,
+    height: 32,
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "color 0.2s",
+    borderRadius: "50%",
+  };
 
   return (
     <>
@@ -99,6 +147,7 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
         .pb-syne { font-family: 'Syne', sans-serif; }
         .pb-mono { font-family: 'Space Mono', monospace; }
         @keyframes pbDot { from{transform:scaleY(0.3)} to{transform:scaleY(1)} }
+        .pb-skip:hover { color: #fff !important; }
       `}</style>
 
       <div className="fixed bottom-0 left-0 right-0 z-50"
@@ -115,6 +164,7 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
         </div>
 
         <div className="flex items-center justify-between px-4 sm:px-8 py-3">
+          {/* LEFT — portada + título */}
           <div className="flex items-center gap-3 min-w-0 flex-1">
             <div className="relative flex-shrink-0">
               <Link to={`/track/${track.id}`} className="absolute inset-0 z-10" />
@@ -144,7 +194,12 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
             </div>
           </div>
 
-          <div className="flex items-center gap-4 flex-shrink-0">
+          {/* CENTER — prev / play / next */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <button className="pb-skip" style={btnStyle} onClick={handlePrev} aria-label="Rebobinar">
+              <PrevIcon />
+            </button>
+
             <button onClick={onTogglePlay}
               className="flex items-center justify-center rounded-full border-none cursor-pointer transition-all duration-200"
               style={{ width: "44px", height: "44px", background: accent, color: "#0f0f12", boxShadow: `0 0 20px ${accent}55` }}
@@ -153,12 +208,16 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
             >
               {isPlaying ? <PauseIcon /> : <PlayIcon />}
             </button>
+
+            <button className="pb-skip" style={btnStyle} onClick={onNext} aria-label="Siguiente canción">
+              <NextIcon />
+            </button>
           </div>
 
+          {/* RIGHT — like + volumen + tiempo */}
           <div className="flex-1 flex items-center justify-end gap-3">
             <LikeButton trackId={track.id} initialLiked={track.user_has_favorited} initialCount={track.favorites_count} />
 
-              
             <div className="hidden sm:flex items-center gap-2">
               <span style={{ color: volume === 0 ? "rgba(255,255,255,0.3)" : accent }}>
                 {volume === 0 ? (
@@ -177,6 +236,7 @@ export default function PlayerBar({ track, audioRef, isPlaying, onTogglePlay }) 
                 style={{ width: "72px", accentColor: accent, cursor: "pointer" }}
               />
             </div>
+
             <span className="hidden sm:block pb-mono text-[10px] text-white/30">
               {formatTime(currentTime)} / {formatTime(duration)}
             </span>

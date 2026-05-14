@@ -57,7 +57,7 @@ export default function RecommendationRow({ rowKey, title, tag, tracks = [], onP
             <div key={track.id} className="flex-shrink-0 w-64 sm:w-72 pt-2">
               <TrackCard
                 track={track}
-                onPlay={onPlay}
+                 onPlay={(t) => onPlay(t, tracks)}
                 isPlaying={isPlaying(track)}
               />
             </div>

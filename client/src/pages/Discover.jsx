@@ -66,7 +66,7 @@ export default function Discover() {
             title={row.title}
             tag={row.tag}
             tracks={row.tracks}
-            onPlay={(track) => handlePlay(track)}
+            onPlay={(track, tracks) => handlePlay(track, tracks)}
             isPlaying={(track) => isTrackActive(track)}
           />
         ))

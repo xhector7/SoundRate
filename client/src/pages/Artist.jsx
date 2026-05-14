@@ -247,7 +247,7 @@ export default function Artist() {
                 <div key={track.id} className="relative group">
                   <TrackCard
                     track={track}
-                    onPlay={handlePlay}
+                    onPlay={(track) => handlePlay(track, profile.tracks)}
                     isPlaying={isTrackActive(track)}
                   />
                   {isOwn && (

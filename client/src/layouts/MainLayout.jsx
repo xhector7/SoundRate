@@ -4,9 +4,8 @@ import PlayerBar from "../components/PlayerBar";
 import { usePlayer } from "../context/PlayerContext";
 
 export default function MainLayout() {
-  const { currentTrack, playingId, togglePlay, audioRef } = usePlayer();
+  const { currentTrack, playingId, togglePlay, audioRef, nextTrack, prevTrack } = usePlayer();
   const isPlaying = !!playingId && !!currentTrack;
- 
 
   return (
     <>
@@ -17,6 +16,8 @@ export default function MainLayout() {
         audioRef={audioRef}
         isPlaying={isPlaying}
         onTogglePlay={togglePlay}
+        onNext={nextTrack}
+        onPrev={prevTrack}
       />
     </>
   );
