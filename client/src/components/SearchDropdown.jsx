@@ -73,8 +73,12 @@ export default function SearchDropdown() {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-white/5 transition-colors"
                 >
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-xs font-bold">{artist.username[0].toUpperCase()}</span>
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center overflow-hidden">
+                    {artist.avatar ? (
+                      <img src={artist.avatar} alt={artist.username} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xs font-bold text-primary">{artist.username[0].toUpperCase()}</span>
+                    )}
                   </div>
                   <span className="text-sm">@{artist.username}</span>
                 </Link>

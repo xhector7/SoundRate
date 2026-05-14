@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import api from "../services/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 export default function Comments({ trackId }) {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ export default function Comments({ trackId }) {
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem("access");
+  const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -32,6 +33,15 @@ export default function Comments({ trackId }) {
       const res = await api.post(`comments/`, { track: trackId, content: newComment });
       setComments((prev) => [res.data, ...prev]);
       setNewComment("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await api.delete(`comments/${id}/`);
+      setComments((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error(err);
     }
@@ -83,15 +93,48 @@ export default function Comments({ trackId }) {
           <p className="text-sm text-white/20">Sin comentarios todavía.</p>
         )}
         {comments.map((c) => (
-          <div key={c.id} className="flex gap-3">
+          <div key={c.id} className="flex gap-3 group">
             <div
-              className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-black"
-              style={{ background: "#00c9b1", color: "#0f0f12" }}
+              className="w-7 h-7 rounded-full flex-shrink-0 overflow-hidden"
+              style={{ background: "#00c9b1" }}
             >
-              {c.user?.username?.[0]?.toUpperCase()}
+              {c.user?.avatar ? (
+                <img src={c.user.avatar} alt={c.user.username} className="w-full h-full object-cover" />
+              ) : (
+                <div
+                  className="w-full h-full flex items-center justify-center text-[10px] font-black"
+                  style={{ color: "#0f0f12" }}
+                >
+                  {c.user?.username?.[0]?.toUpperCase()}
+                </div>
+              )}
             </div>
-            <div>
-              <p className="text-xs text-white/40 mb-0.5">@{c.user?.username}</p>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <Link
+                  to={`/artist/${c.user?.username}`}
+                  className="text-xs text-white/40 mb-0.5 hover:text-primary transition-colors no-underline block"
+                >
+                  @{c.user?.username}
+                </Link>
+                {c.user?.username === currentUser.username && (
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer bg-transparent border-none p-1 rounded"
+                    style={{ color: "rgba(255,255,255,0.2)" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "#ff5050")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.2)")}
+                    title="Eliminar comentario"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                  </button>
+                )}
+              </div>
               <p className="text-sm text-white/80">{c.content}</p>
             </div>
           </div>

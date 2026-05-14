@@ -1,3 +1,5 @@
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from datetime import timedelta
 
 from rest_framework import viewsets, permissions
@@ -26,6 +28,7 @@ from .serializer import ArtistProfileSerializer
 from django.contrib.auth.models import User
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import action
+from allauth.account.models import EmailAddress
 
 class TrackViewSet(viewsets.ModelViewSet):
     queryset = Track.objects.all().annotate(
@@ -49,6 +52,7 @@ class TrackViewSet(viewsets.ModelViewSet):
         return {"request": self.request}
 
     def perform_create(self, serializer):
+        print("DATA:", self.request.data)
         serializer.save(owner=self.request.user)
 
 # 💬 COMMENTS
@@ -187,6 +191,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 #LOGIN
 #logica de login, de autenticacion, aqui en views creamos el metodo q se encarga de enviar el token al front una vez
 #  llega el request con el username y password, y compruebe q son correctos en la bd
+
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = []
@@ -195,6 +200,18 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
 
         if serializer.is_valid():
+            user = User.objects.get(username=request.data.get("username"))
+            
+            email_verified = EmailAddress.objects.filter(
+                user=user, verified=True
+            ).exists()
+            
+            if not email_verified:
+                return Response(
+                    {"detail": "Debes verificar tu email antes de iniciar sesión."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             return Response(serializer.validated_data)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -436,9 +453,15 @@ class SearchView(APIView):
             ratings_total=Count("ratings"),
         ).order_by("-plays")[:8]
 
-        artists = User.objects.filter(
-            username__icontains=q
-        ).values("id", "username")[:5]
+        artists_qs = User.objects.filter(username__icontains=q).select_related('profile')[:5]
+        artists = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "avatar": request.build_absolute_uri(u.profile.avatar.url) if hasattr(u, 'profile') and u.profile.avatar else None
+            }
+            for u in artists_qs
+        ]
 
         genres = Genre.objects.filter(
             name__icontains=q
@@ -446,7 +469,7 @@ class SearchView(APIView):
 
         return Response({
             "tracks": TrackSerializer(tracks, many=True, context={"request": request}).data,
-            "artists": list(artists),
+            "artists": artists,
             "genres": list(genres),
         })
     
@@ -474,3 +497,14 @@ class TrendingView(APIView):
         return Response({
             "tracks": TrackSerializer(tracks, many=True, context={"request": request}).data
         })
+
+
+
+
+@receiver(post_save, sender=User)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.get_or_create(
+            user=instance,
+            defaults={"display_name": instance.username}
+        )

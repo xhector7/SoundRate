@@ -14,6 +14,7 @@ export default function Track() {
   const [related, setRelated] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("access");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -136,7 +137,22 @@ export default function Track() {
                 border: "1px solid rgba(0,201,177,0.3)",
               }}
             >
-              {isTrackActive(track) ? "▐▐ Reproduciendo" : "▶ Reproducir"}
+              {isTrackActive(track) ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <rect x="2" y="1" width="4" height="12" rx="1" />
+                    <rect x="8" y="1" width="4" height="12" rx="1" />
+                  </svg>
+                  Reproduciendo
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                    <polygon points="3,1 13,7 3,13" />
+                  </svg>
+                  Reproducir
+                </>
+              )}
             </button>
 
                 {/* 👇 SIMPLIFICADO - sin condicional token */}
@@ -152,6 +168,30 @@ export default function Track() {
                 }));
               }}
             />
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold cursor-pointer transition-all duration-200"
+              style={{
+                background: copied ? "rgba(0,201,177,0.15)" : "rgba(255,255,255,0.05)",
+                border: `1px solid ${copied ? "rgba(0,201,177,0.4)" : "rgba(255,255,255,0.1)"}`,
+                color: copied ? "#00c9b1" : "rgba(255,255,255,0.6)",
+              }}
+            >
+              {copied ? "✓ Copiado" : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <polyline points="16 6 12 2 8 6"/>
+                    <line x1="12" y1="2" x2="12" y2="15"/>
+                  </svg>
+                  Compartir
+                </>
+              )}
+            </button>
           </div>
         </div>
 

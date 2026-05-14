@@ -1,0 +1,15 @@
+🎵 SoundRate — Bienvenido a bordo
+
+Hola {{ user.username }},
+
+Estamos muy contentos de tenerte con nosotros.
+
+Para empezar a descubrir y valorar música, solo necesitas confirmar tu dirección de correo:
+
+👉 {{ activate_url }}
+
+Si el enlace no funciona, cópialo y pégalo en tu navegador.
+
+¿No solicitaste esta verificación? Ignora este mensaje.
+
+© 2026 SoundRate — La música nos conecta

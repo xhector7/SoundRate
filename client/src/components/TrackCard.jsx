@@ -77,7 +77,7 @@ export default function TrackCard({ track, onPlay, isPlaying }) {
           </span>
         </div>
         <WaveformBar heights={track.waveform || []} accent={accent} playing={isPlaying} />
-        <h3 className="text-sm font-bold mt-3 text-white">{track.title}</h3>
+        <h3 className="text-sm font-bold mt-3 text-white truncate">{track.title}</h3>
         <Link to={`/artist/${track.owner?.username}`}
           className="text-xs text-white/40 hover:text-primary transition-colors no-underline block mb-4"
         >

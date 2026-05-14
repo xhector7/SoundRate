@@ -4,6 +4,7 @@ import MainLayout from "../layouts/MainLayout";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import VerifyEmail from "../pages/VerifyEmail";  // ← Importar
 import Track from "../pages/Track";
 import Artist from "../pages/Artist";
 import Discover from "../pages/Discover";
@@ -16,6 +17,10 @@ import Trending from "../pages/Trending";
 export default function AppRouter() {
   return (
     <Routes>
+      {/* Ruta de verificación FUERA del MainLayout (sin header/player) */}
+      <Route path="/verify-email/:key" element={<VerifyEmail />} />
+      
+      {/* Rutas con layout principal */}
       <Route path="/" element={<MainLayout />}>
         <Route index element={<Home />} />
         <Route path="login" element={<Login />} />

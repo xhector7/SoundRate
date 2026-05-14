@@ -1,4 +1,4 @@
-from api.models import Genre
+from tracks.models import Genre
 
 GENRES = [
     ("Ambient", "ambient"),

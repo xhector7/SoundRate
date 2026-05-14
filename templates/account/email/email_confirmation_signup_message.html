@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirma tu cuenta en SoundRate</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #000000; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    
+    <!-- Contenedor principal -->
+    <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 560px; background-color: #000000; margin-top: 20px; margin-bottom: 20px;">
+        <tr>
+            <td style="padding: 24px;">
+                
+                <!-- Card con borde turquesa sutil -->
+                <table align="center" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0D0D0D; border-radius: 24px; border: 1px solid #1A403A;">
+                    <tr>
+                        <td style="padding: 40px 32px;">
+                            
+                            <!-- Logo con toque turquesa -->
+                            <div style="text-align: center; margin-bottom: 32px;">
+                                <span style="font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #FFFFFF;">🎵 Sound<span style="color: #00C9B1;">Rate</span></span>
+                            </div>
+                            
+                            <!-- Línea decorativa turquesa -->
+                            <div style="width: 60px; height: 3px; background-color: #00C9B1; margin: 0 auto 24px auto; border-radius: 3px;"></div>
+                            
+                            <!-- Título -->
+                            <h1 style="color: #FFFFFF; font-size: 22px; font-weight: 600; margin: 0 0 12px 0; text-align: center;">
+                                ¡Bienvenido a SoundRate!
+                            </h1>
+                            
+                            <!-- Mensaje de bienvenida -->
+                            <p style="color: #B0B0B0; font-size: 15px; line-height: 1.5; margin: 0 0 20px 0; text-align: center;">
+                                Hola <strong style="color: #00C9B1;">{{ user.username }}</strong>,<br>
+                                Estamos muy contentos de tenerte con nosotros.
+                            </p>
+                            
+                            <!-- Texto de verificación -->
+                            <p style="color: #B0B0B0; font-size: 15px; line-height: 1.5; margin: 0 0 24px 0; text-align: center;">
+                                Para empezar a descubrir y valorar música,<br>
+                                solo necesitas confirmar tu dirección de correo:
+                            </p>
+                            
+                            <!-- Botón redondeado turquesa -->
+                            <div style="text-align: center; margin: 32px 0;">
+                                <a href="{{ activate_url }}" style="background-color: #00C9B1; color: #000000; padding: 14px 36px; text-decoration: none; border-radius: 40px; font-weight: 600; font-size: 15px; display: inline-block; letter-spacing: 0.5px;">✓ Verificar mi cuenta</a>
+                            </div>
+                            
+                            <!-- Enlace alternativo (fondo oscuro) -->
+                            <div style="background-color: #0A0A0A; border-radius: 16px; padding: 16px; margin: 24px 0 32px 0; border: 1px solid #1A1A1A;">
+                                <p style="color: #888888; font-size: 11px; margin: 0 0 10px 0; text-align: center;">
+                                    ¿El botón no funciona? Copia y pega este enlace:
+                                </p>
+                                <p style="color: #00C9B1; font-size: 11px; word-break: break-all; margin: 0; text-align: center; font-family: monospace;">
+                                    {{ activate_url }}
+                                </p>
+                            </div>
+                            
+                            <!-- Línea divisoria -->
+                            <hr style="border: 0; height: 1px; background: linear-gradient(90deg, transparent, #00C9B1, transparent); margin: 32px 0 24px 0;">
+                            
+                            <!-- Footer -->
+                            <p style="color: #666666; font-size: 11px; text-align: center; margin: 0;">
+                                Si no solicitaste esta verificación, puedes ignorar este correo.<br>
+                                © 2026 SoundRate — La música nos conecta
+                            </p>
+                            
+                            <!-- Pequeño detalle turquesa -->
+                            <div style="text-align: center; margin-top: 24px;">
+                                <span style="color: #00C9B1; font-size: 10px;">✦</span>
+                            </div>
+                            
+                        </td>
+                    </tr>
+                </table>
+                
+            </td>
+        </table>
+    </table>
+    
+</body>
+</html>

@@ -15,15 +15,15 @@ router.register(r"profiles", views.ProfileViewSet, basename="profiles")
 
 urlpatterns = [
     path("", include(router.urls)),
-    path("register/", views.RegisterView.as_view(), name="register"),
+    path("login/", views.LoginView.as_view()),
+    path("register/", views.RegisterView.as_view()),
     path("recommendations/trending/", views.TrendingRecommendationsView.as_view()),
     path("recommendations/seasonal/", views.SeasonalRecommendationsView.as_view()),
     path("recommendations/emerging/", views.EmergingRecommendationsView.as_view()),
     path("recommendations/taste/", views.TasteRecommendationsView.as_view()),
-    path("tracks/<int:track_id>/play/",views.IncrementPlayView.as_view()),
+    path("tracks/<int:track_id>/play/", views.IncrementPlayView.as_view()),
     path("tracks/<int:track_id>/related/", views.RelatedTracksView.as_view()),
     path("artist/<str:username>/", views.ArtistProfileView.as_view()),
     path("search/", views.SearchView.as_view()),
     path("trending/", views.TrendingView.as_view()),
-  
 ]

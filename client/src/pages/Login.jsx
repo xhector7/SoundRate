@@ -14,20 +14,35 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/token/`, { username, password });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/v1/login/`, { username, password });
+      
       localStorage.setItem("access", res.data.access);
       localStorage.setItem("refresh", res.data.refresh);
-      localStorage.setItem("user", JSON.stringify({ username })); // ← aquí
+
+      const profileRes = await axios.get(`${import.meta.env.VITE_API_URL}/api/v1/profiles/me/`, {
+        headers: { Authorization: `Bearer ${res.data.access}` }
+      });
+
+      localStorage.setItem("user", JSON.stringify({
+        username,
+        avatar: profileRes.data.avatar
+      }));
+
       navigate("/discover");
-    } catch {
-      setError("Credenciales incorrectas");
+    } catch (err) {
+      
+      if (err.response?.status === 403) {
+        setError(err.response.data.detail);
+      } else {
+        setError("Credenciales incorrectas");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-bg text-white flex items-center justify-center px-4 overflow-hidden relative">
+    <div className="min-h-screen bg-bg text-white flex items-center justify-center px-4 py-8 overflow-auto relative">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap');
         .syne { font-family: 'Syne', sans-serif; }
@@ -43,17 +58,14 @@ export default function Login() {
         }
       `}</style>
 
-      {/* orbs de fondo */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute rounded-full" style={{ top:"10%", left:"5%", width:"400px", height:"400px", background:"radial-gradient(circle,rgba(0,201,177,0.07) 0%,transparent 70%)" }} />
         <div className="absolute rounded-full" style={{ bottom:"10%", right:"5%", width:"350px", height:"350px", background:"radial-gradient(circle,rgba(124,92,255,0.06) 0%,transparent 70%)" }} />
       </div>
 
-      {/* card */}
       <div className="fu fu1 relative z-10 w-full max-w-sm rounded-2xl p-8 flex flex-col gap-6"
         style={{ background:"rgba(26,26,34,0.85)", border:"1px solid rgba(255,255,255,0.08)", backdropFilter:"blur(20px)", WebkitBackdropFilter:"blur(20px)" }}
       >
-        {/* logo */}
         <div className="fu fu1 flex items-center gap-2 mb-2">
           <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
             <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
@@ -66,17 +78,16 @@ export default function Login() {
           </span>
         </div>
 
-        {/* título */}
         <div className="fu fu2">
           <h1 className="syne text-2xl font-black tracking-tight mb-1">Bienvenido de nuevo</h1>
           <p className="text-sm text-muted">Inicia sesión para seguir escuchando</p>
         </div>
 
-        {/* formulario */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <div className="fu fu3 flex flex-col gap-1">
             <label className="mono text-[10px] uppercase tracking-widest text-muted">Usuario</label>
             <input
+              type="text"
               className="w-full px-4 py-3 rounded-xl text-sm text-white outline-none transition-all duration-200"
               style={{ background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)" }}
               placeholder="tu_usuario"
@@ -84,6 +95,7 @@ export default function Login() {
               onChange={e => setUsername(e.target.value)}
               onFocus={e => e.target.style.border="1px solid rgba(0,201,177,0.5)"}
               onBlur={e => e.target.style.border="1px solid rgba(255,255,255,0.08)"}
+              required
             />
           </div>
 
@@ -98,12 +110,11 @@ export default function Login() {
               onChange={e => setPassword(e.target.value)}
               onFocus={e => e.target.style.border="1px solid rgba(0,201,177,0.5)"}
               onBlur={e => e.target.style.border="1px solid rgba(255,255,255,0.08)"}
+              required
             />
           </div>
 
-          {error && (
-            <p className="text-red-400 text-xs px-1">{error}</p>
-          )}
+          {error && <p className="text-red-400 text-xs px-1">{error}</p>}
 
           <button
             type="submit"
@@ -117,7 +128,6 @@ export default function Login() {
           </button>
         </form>
 
-        {/* registro */}
         <p className="fu fu5 text-center text-sm text-muted">
           ¿No tienes cuenta?{" "}
           <Link to="/register" className="text-primary font-semibold no-underline hover:underline">

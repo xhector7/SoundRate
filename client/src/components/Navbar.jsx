@@ -229,9 +229,17 @@ export default function Navbar() {
                 onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(0,201,177,0.4)"}
                 onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"}
               >
+                {user.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.username}
+                  className="w-5 h-5 rounded-full object-cover"
+                />
+              ) : (
                 <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-bg text-[10px] font-black">
                   {user.username?.[0]?.toUpperCase()}
                 </div>
+              )}
                 <span className="text-sm text-white font-medium">{user.username}</span>
               </Link>
 
@@ -361,9 +369,13 @@ export default function Navbar() {
                   + Subir track
                 </Link>
                 <Link to={`/artist/${user.username}`} className="no-underline flex items-center gap-2 py-2">
-                  <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-bg text-xs font-black">
-                    {user.username?.[0]?.toUpperCase()}
-                  </div>
+                  {user.avatar ? (
+                    <img src={user.avatar} alt={user.username} className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-bg text-xs font-black">
+                      {user.username?.[0]?.toUpperCase()}
+                    </div>
+                  )}
                   <span className="text-sm text-white font-medium">{user.username}</span>
                 </Link>
                 <button onClick={logout} className="text-sm text-white/40 cursor-pointer bg-transparent border-none text-left py-2">

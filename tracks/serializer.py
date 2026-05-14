@@ -7,9 +7,21 @@ from django.db.models import Count
 
 # 👤 USER SIMPLE (para evitar problemas circulares)
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username"]
+        fields = ["id", "username", "avatar"]
+
+    def get_avatar(self, obj):
+        request = self.context.get("request")
+        try:
+            profile = obj.profile
+            if profile.avatar and request:
+                return request.build_absolute_uri(profile.avatar.url)
+        except:
+            pass
+        return None
 
 
 
@@ -64,7 +76,10 @@ class CommentSerializer(serializers.ModelSerializer):
 class TrackSerializer(serializers.ModelSerializer):
 
     # relaciones básicas
-    genre = serializers.StringRelatedField()
+    genre = serializers.StringRelatedField(read_only=True)
+    genre_id = serializers.PrimaryKeyRelatedField(
+        queryset=Genre.objects.all(), source="genre", write_only=True, required=False
+    )
     owner = UserSerializer(read_only=True)
 
     # métricas
@@ -86,9 +101,11 @@ class TrackSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "slug",
+            "description",
             "audio_file",
             "cover_image",
             "genre",
+            "genre_id", 
             "owner",
 
             # stats
