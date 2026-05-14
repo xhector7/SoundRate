@@ -30,7 +30,6 @@ export default function Login() {
 
       navigate("/discover");
     } catch (err) {
-      
       if (err.response?.status === 403) {
         setError(err.response.data.detail);
       } else {
